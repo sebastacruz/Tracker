@@ -1,14 +1,44 @@
 /**
  * Dashboard component - Visual analytics with charts
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useEntries } from '../hooks/useEntries';
 import { getSubstanceRemaining, formatTimestamp } from '../utils/calculations';
 
+const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+
 export default function Dashboard({ substances }) {
   const { entries } = useEntries();
-  const [selectedSubstance, setSelectedSubstance] = useState(substances[0]?.id || '');
+  const [selectedSubstances, setSelectedSubstances] = useState([substances[0]?.id || '']);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
+  const toggleSubstance = (substanceId) => {
+    setSelectedSubstances(prev => {
+      if (prev.includes(substanceId)) {
+        return prev.filter(id => id !== substanceId);
+      } else {
+        return [...prev, substanceId];
+      }
+    });
+  };
 
   // Get substance lookup
   const substanceLookup = useMemo(() => {
@@ -18,38 +48,51 @@ export default function Dashboard({ substances }) {
     }, {});
   }, [substances]);
 
-  // Chart 1: Remaining mass over time for selected substance
+  // Chart 1: Remaining mass over time for selected substances
   const remainingOverTimeData = useMemo(() => {
-    if (!selectedSubstance) return [];
+    if (selectedSubstances.length === 0) return [];
 
-    const substance = substanceLookup[selectedSubstance];
-    if (!substance) return [];
-
-    const substanceEntries = entries
-      .filter(e => e.substanceId === selectedSubstance)
+    // Get all entries and sort by timestamp
+    const allEntries = entries
+      .filter(e => selectedSubstances.includes(e.substanceId))
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    let runningTotal = 0;
-    return substanceEntries.map(entry => {
-      runningTotal += entry.delta;
-      const remaining = substance.theoreticalInitialMass - runningTotal;
-      const time = formatTimestamp(entry.timestamp);
+    if (allEntries.length === 0) return [];
 
-      return {
-        date: time.date,
-        time: time.time,
-        remaining: Number(remaining.toFixed(2)),
-        delta: entry.delta,
-        person: entry.person,
-      };
+    // Group by timestamp and substance to calculate remaining
+    const timeMap = {};
+    const substanceRunning = {};
+
+    // Initialize running totals
+    selectedSubstances.forEach(id => {
+      substanceRunning[id] = 0;
     });
-  }, [selectedSubstance, entries, substanceLookup]);
 
-  // Chart 2: Usage by person (for selected substance)
+    allEntries.forEach(entry => {
+      substanceRunning[entry.substanceId] += entry.delta;
+      const time = formatTimestamp(entry.timestamp);
+      const key = `${time.date} ${time.time}`;
+
+      if (!timeMap[key]) {
+        timeMap[key] = { date: time.date, time: time.time, timestamp: entry.timestamp };
+      }
+
+      const substance = substanceLookup[entry.substanceId];
+      if (substance) {
+        const remaining = substance.theoreticalInitialMass - substanceRunning[entry.substanceId];
+        timeMap[key][`${substance.name}`] = Number(remaining.toFixed(2));
+      }
+    });
+
+    // Convert to array and sort by timestamp
+    return Object.values(timeMap).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  }, [selectedSubstances, entries, substanceLookup]);
+
+  // Chart 2: Usage by person (for selected substances)
   const usageByPersonData = useMemo(() => {
-    if (!selectedSubstance) return [];
+    if (selectedSubstances.length === 0) return [];
 
-    const substanceEntries = entries.filter(e => e.substanceId === selectedSubstance);
+    const substanceEntries = entries.filter(e => selectedSubstances.includes(e.substanceId));
 
     const personMap = {};
     substanceEntries.forEach(entry => {
@@ -65,7 +108,7 @@ export default function Dashboard({ substances }) {
         usage: Number(usage.toFixed(2)),
       }))
       .sort((a, b) => b.usage - a.usage);
-  }, [selectedSubstance, entries]);
+  }, [selectedSubstances, entries]);
 
   // Chart 3: All substances remaining
   const allSubstancesData = useMemo(() => {
@@ -101,20 +144,43 @@ export default function Dashboard({ substances }) {
         <p className="text-slate-400">Visual analytics and trends</p>
       </div>
 
-      {/* Flavor Selector */}
-      <div className="card mb-6 max-w-xs">
-        <label className="label-base">Select Flavor</label>
-        <select
-          value={selectedSubstance}
-          onChange={(e) => setSelectedSubstance(e.target.value)}
-          className="input-base w-full"
+      {/* Flavor Selector - Multi-select */}
+      <div ref={menuRef} className="card mb-6 max-w-md">
+        <label className="label-base">Select Flavors</label>
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className="input-base w-full text-left flex justify-between items-center"
         >
-          {substances.filter(s => s.active).map(s => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+          <span className="truncate">
+            {selectedSubstances.length === 0 
+              ? 'No flavors selected' 
+              : selectedSubstances.length === 1
+              ? substances.find(s => s.id === selectedSubstances[0])?.name
+              : `${selectedSubstances.length} flavors selected`}
+          </span>
+          <span className="text-slate-400">{showMenu ? '▲' : '▼'}</span>
+        </button>
+
+        {showMenu && (
+          <div className="absolute mt-1 w-full max-w-md bg-slate-800 border border-slate-700 rounded-lg z-50 max-h-64 overflow-y-auto">
+            {substances.filter(s => s.active).map(substance => (
+              <button
+                key={substance.id}
+                type="button"
+                onClick={() => toggleSubstance(substance.id)}
+                className="w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors flex items-center gap-2 text-slate-300"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSubstances.includes(substance.id)}
+                  onChange={() => {}}
+                  className="w-4 h-4 cursor-pointer"
+                />
+                {substance.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Charts Grid */}
@@ -141,20 +207,27 @@ export default function Dashboard({ substances }) {
                   labelStyle={{ color: '#e2e8f0' }}
                 />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="remaining"
-                  stroke="#3b82f6"
-                  name="Remaining (g)"
-                  dot={{ fill: '#3b82f6', r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
+                {selectedSubstances.map((substanceId, index) => {
+                  const substance = substanceLookup[substanceId];
+                  return (
+                    <Line
+                      key={substanceId}
+                      type="monotone"
+                      dataKey={substance?.name}
+                      stroke={COLORS[index % COLORS.length]}
+                      name={`${substance?.name} (g)`}
+                      dot={{ fill: COLORS[index % COLORS.length], r: 3 }}
+                      activeDot={{ r: 5 }}
+                      strokeWidth={2}
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           </div>
         ) : (
           <div className="card col-span-full md:col-span-1 flex items-center justify-center py-12">
-            <p className="text-slate-400">No entries yet for this substance</p>
+            <p className="text-slate-400">No entries yet for selected substances</p>
           </div>
         )}
 

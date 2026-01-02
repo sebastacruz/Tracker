@@ -2,11 +2,13 @@
  * Seed data for initial setup
  *
  * Default Configuration:
- * - Two initial substances: Apollo (33.13g) and Gramlin (45.68g)
+ * - Two initial substances: Apollo and Gramlin, each with 1g of substance
  * - Includes 9 historical entries from Jan 1-2, 2026
- * - New substances added by users will default to 1g (editable before saving)
- * - Mass values include the container weight
- * - Theoretical initial mass represents the starting weight when first used
+ * - Theoretical initial mass = 1g (substance only, container weight not included)
+ * - Measured masses include container weight (e.g., 33.13g = 32.13g jar + 1g substance)
+ * - Deltas represent actual substance consumed
+ * - Remaining substance = 1g - sum(all deltas)
+ * - New substances default to 1g theoretical mass (user-editable before saving)
  */
 
 const SEED_DATA = {
@@ -14,14 +16,14 @@ const SEED_DATA = {
     {
       id: 'substance-apollo',
       name: 'Apollo',
-      theoreticalInitialMass: 33.13,
+      theoreticalInitialMass: 1,
       createdAt: '2026-01-01T00:00:00Z',
       active: true,
     },
     {
       id: 'substance-gramlin',
       name: 'Gramlin',
-      theoreticalInitialMass: 45.68,
+      theoreticalInitialMass: 1,
       createdAt: '2026-01-01T00:00:00Z',
       active: true,
     },

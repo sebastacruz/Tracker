@@ -38,7 +38,7 @@ export default function QuickEntry({ substances }) {
 
     // Validation
     if (!selectedSubstance) {
-      setError('Please select a substance');
+      setError('Please select a flavor');
       return;
     }
     if (!selectedPerson) {
@@ -100,15 +100,15 @@ export default function QuickEntry({ substances }) {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Substance Selection */}
+        {/* Flavor Selection */}
         <div>
-          <label className="label-base">Substance</label>
+          <label className="label-base">Flavor</label>
           <select
             value={selectedSubstance}
             onChange={(e) => setSelectedSubstance(e.target.value)}
             className="input-base w-full"
           >
-            <option value="">Select a substance...</option>
+            <option value="">Select a flavor...</option>
             {substances.filter(s => s.active).map(substance => (
               <option key={substance.id} value={substance.id}>
                 {substance.name}
@@ -117,23 +117,21 @@ export default function QuickEntry({ substances }) {
           </select>
         </div>
 
-        {/* Person Input */}
+        {/* Person Selection */}
         <div>
           <label className="label-base">Person</label>
-          <input
-            type="text"
-            list="people-list"
+          <select
             value={selectedPerson}
             onChange={(e) => setSelectedPerson(e.target.value)}
-            placeholder="Enter your name"
             className="input-base w-full"
-            autoComplete="off"
-          />
-          <datalist id="people-list">
+          >
+            <option value="">Select a person...</option>
             {uniquePeople.map(person => (
-              <option key={person} value={person} />
+              <option key={person} value={person}>
+                {person}
+              </option>
             ))}
-          </datalist>
+          </select>
         </div>
 
         {/* Initial Mass */}

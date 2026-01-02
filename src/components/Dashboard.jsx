@@ -101,9 +101,9 @@ export default function Dashboard({ substances }) {
         <p className="text-slate-400">Visual analytics and trends</p>
       </div>
 
-      {/* Substance Selector */}
+      {/* Flavor Selector */}
       <div className="card mb-6 max-w-xs">
-        <label className="label-base">Select Substance</label>
+        <label className="label-base">Select Flavor</label>
         <select
           value={selectedSubstance}
           onChange={(e) => setSelectedSubstance(e.target.value)}

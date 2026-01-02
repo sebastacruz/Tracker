@@ -39,13 +39,13 @@ export default function History({ substances }) {
       {/* Filters */}
       <div className="card mb-6 grid gap-4 md:grid-cols-2">
         <div>
-          <label className="label-base">Filter by Substance</label>
+          <label className="label-base">Filter by Flavor</label>
           <select
             value={selectedSubstance}
             onChange={(e) => setSelectedSubstance(e.target.value)}
             className="input-base w-full"
           >
-            <option value="">All substances</option>
+            <option value="">All flavors</option>
             {substances.map(s => (
               <option key={s.id} value={s.id}>
                 {s.name}

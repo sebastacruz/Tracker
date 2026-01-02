@@ -1,5 +1,11 @@
 /**
  * SubstanceManager component - Add, edit, and delete substances
+ *
+ * Features:
+ * - Add new substances with customizable theoretical initial mass
+ * - Default mass for new substances is 1g (editable before saving)
+ * - View remaining mass and usage statistics
+ * - Delete substances when no longer needed
  */
 import { useState } from 'react';
 import { useSubstances } from '../hooks/useSubstances';

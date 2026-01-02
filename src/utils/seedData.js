@@ -1,6 +1,11 @@
 /**
  * Seed data for initial setup
- * Contains sample data from the original spreadsheet
+ *
+ * Default Configuration:
+ * - Two initial substances: Apollo and Gramlin
+ * - Both substances default to 1g theoretical initial mass
+ * - New substances added by users will default to 1g (editable before saving)
+ * - Mass values include the container weight
  */
 
 const SEED_DATA = {
@@ -20,107 +25,7 @@ const SEED_DATA = {
       active: true,
     },
   ],
-  entries: [
-    {
-      id: 'entry-1',
-      substanceId: 'substance-apollo',
-      person: 't',
-      initialMass: 33.13,
-      finalMass: 33.09,
-      delta: 0.04,
-      timestamp: '2026-01-01T12:30:00Z',
-    },
-    {
-      id: 'entry-2',
-      substanceId: 'substance-gramlin',
-      person: 't',
-      initialMass: 45.68,
-      finalMass: 45.62,
-      delta: 0.06,
-      timestamp: '2026-01-01T13:30:00Z',
-    },
-    {
-      id: 'entry-3',
-      substanceId: 'substance-apollo',
-      person: 't',
-      initialMass: 33.09,
-      finalMass: 33.06,
-      delta: 0.03,
-      timestamp: '2026-01-01T15:00:00Z',
-    },
-    {
-      id: 'entry-4',
-      substanceId: 'substance-apollo',
-      person: 'e',
-      initialMass: 33.06,
-      finalMass: 33.02,
-      delta: 0.04,
-      timestamp: '2026-01-01T15:00:30Z',
-    },
-    {
-      id: 'entry-5',
-      substanceId: 'substance-gramlin',
-      person: 't',
-      initialMass: 45.64,
-      finalMass: 45.59,
-      delta: 0.05,
-      timestamp: '2026-01-01T16:38:00Z',
-    },
-    {
-      id: 'entry-6',
-      substanceId: 'substance-gramlin',
-      person: 't',
-      initialMass: 45.61,
-      finalMass: 45.57,
-      delta: 0.04,
-      timestamp: '2026-01-02T07:30:00Z',
-    },
-    {
-      id: 'entry-7',
-      substanceId: 'substance-apollo',
-      person: 't',
-      initialMass: 33.04,
-      finalMass: 33.0,
-      delta: 0.04,
-      timestamp: '2026-01-02T09:30:00Z',
-    },
-    {
-      id: 'entry-8',
-      substanceId: 'substance-gramlin',
-      person: 't',
-      initialMass: 45.57,
-      finalMass: 45.52,
-      delta: 0.05,
-      timestamp: '2026-01-02T11:00:00Z',
-    },
-    {
-      id: 'entry-9',
-      substanceId: 'substance-gramlin',
-      person: 'e',
-      initialMass: 45.52,
-      finalMass: 45.42,
-      delta: 0.1,
-      timestamp: '2026-01-02T11:00:30Z',
-    },
-    {
-      id: 'entry-10',
-      substanceId: 'substance-apollo',
-      person: 'guest',
-      initialMass: 33.0,
-      finalMass: 32.96,
-      delta: 0.04,
-      timestamp: '2026-01-02T13:15:00Z',
-    },
-    {
-      id: 'entry-11',
-      substanceId: 'substance-gramlin',
-      person: 'guest',
-      initialMass: 45.42,
-      finalMass: 45.38,
-      delta: 0.04,
-      timestamp: '2026-01-02T14:45:00Z',
-    },
-  ],
+  entries: [],
   metadata: {
     version: '1.0',
     lastUpdated: new Date().toISOString(),
@@ -144,32 +49,6 @@ export function initializeSeedData() {
   return false;
 }
 
-/**
- * Migrate existing substances to 1g if they were from old seed data
- */
-export function migrateSubstances() {
-  const STORAGE_KEY = 'tracker_data';
-  const existingData = localStorage.getItem(STORAGE_KEY);
-
-  if (existingData) {
-    try {
-      const data = JSON.parse(existingData);
-      // Update Apollo and Gramlin to 1g if they exist
-      if (data.substances) {
-        data.substances = data.substances.map(sub => {
-          if (sub.id === 'substance-apollo' || sub.id === 'substance-gramlin') {
-            return { ...sub, theoreticalInitialMass: 1 };
-          }
-          return sub;
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        console.log('✅ Substances migrated to 1g default');
-      }
-    } catch (error) {
-      console.error('Error during migration:', error);
-    }
-  }
-}
 
 /**
  * Export seed data for reference

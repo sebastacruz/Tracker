@@ -85,13 +85,51 @@ src/
 
 ## Development
 
+### Prerequisites
+
+This project uses Node.js managed via NVM (Node Version Manager). To build the project:
+
+1. **Ensure NVM is installed**:
+   ```bash
+   nvm --version
+   ```
+
+2. **Use the correct Node version**:
+   ```bash
+   nvm use 20.19.6
+   # or install if needed:
+   nvm install 20.19.6
+   ```
+
 ### Available Scripts
 
 ```bash
 npm run dev          # Start development server (hot reload)
-npm run build        # Build for production
+npm run build        # Build for production (outputs to docs/ folder)
 npm run preview      # Preview production build
 npm run lint         # Run ESLint
+```
+
+### Building for GitHub Pages
+
+The project is configured to build to the `docs/` folder for GitHub Pages deployment:
+
+```bash
+# Build the production bundle
+npm run build
+
+# Commit changes
+git add -A
+git commit -m "Your commit message"
+
+# Push to GitHub (triggers GitHub Pages deployment)
+git push origin main
+```
+
+**Note**: If using NVM and npm isn't in your PATH, you can use the full path:
+```bash
+export PATH="$HOME/.nvm/versions/node/v20.19.6/bin:$PATH"
+npm run build
 ```
 
 ### Code Style

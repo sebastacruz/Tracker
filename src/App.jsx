@@ -9,16 +9,15 @@ import History from './components/History';
 import SubstanceManager from './components/SubstanceManager';
 import Settings from './components/Settings';
 import { useSubstances } from './hooks/useSubstances';
-import { initializeSeedData, migrateSubstances } from './utils/seedData';
+import { initializeSeedData } from './utils/seedData';
 
 export default function App() {
   const { substances } = useSubstances();
   const [currentView, setCurrentView] = useState('entry');
 
-  // Initialize seed data on first run and run migrations
+  // Initialize seed data on first run
   useEffect(() => {
     initializeSeedData();
-    migrateSubstances();
   }, []);
 
   // Render current view

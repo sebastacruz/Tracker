@@ -24,7 +24,7 @@ const SEED_DATA = {
     {
       id: 'entry-1',
       substanceId: 'substance-apollo',
-      person: 'User',
+      person: 't',
       initialMass: 33.13,
       finalMass: 33.09,
       delta: 0.04,
@@ -33,7 +33,7 @@ const SEED_DATA = {
     {
       id: 'entry-2',
       substanceId: 'substance-gramlin',
-      person: 'User',
+      person: 't',
       initialMass: 45.68,
       finalMass: 45.62,
       delta: 0.06,
@@ -42,7 +42,7 @@ const SEED_DATA = {
     {
       id: 'entry-3',
       substanceId: 'substance-apollo',
-      person: 'User',
+      person: 't',
       initialMass: 33.09,
       finalMass: 33.06,
       delta: 0.03,
@@ -51,7 +51,7 @@ const SEED_DATA = {
     {
       id: 'entry-4',
       substanceId: 'substance-apollo',
-      person: 'User',
+      person: 'e',
       initialMass: 33.06,
       finalMass: 33.02,
       delta: 0.04,
@@ -60,7 +60,7 @@ const SEED_DATA = {
     {
       id: 'entry-5',
       substanceId: 'substance-gramlin',
-      person: 'User',
+      person: 't',
       initialMass: 45.64,
       finalMass: 45.59,
       delta: 0.05,
@@ -69,7 +69,7 @@ const SEED_DATA = {
     {
       id: 'entry-6',
       substanceId: 'substance-gramlin',
-      person: 'User',
+      person: 't',
       initialMass: 45.61,
       finalMass: 45.57,
       delta: 0.04,
@@ -78,7 +78,7 @@ const SEED_DATA = {
     {
       id: 'entry-7',
       substanceId: 'substance-apollo',
-      person: 'User',
+      person: 't',
       initialMass: 33.04,
       finalMass: 33.0,
       delta: 0.04,
@@ -87,7 +87,7 @@ const SEED_DATA = {
     {
       id: 'entry-8',
       substanceId: 'substance-gramlin',
-      person: 'User',
+      person: 't',
       initialMass: 45.57,
       finalMass: 45.52,
       delta: 0.05,
@@ -96,7 +96,7 @@ const SEED_DATA = {
     {
       id: 'entry-9',
       substanceId: 'substance-gramlin',
-      person: 'User',
+      person: 'e',
       initialMass: 45.52,
       finalMass: 45.42,
       delta: 0.1,

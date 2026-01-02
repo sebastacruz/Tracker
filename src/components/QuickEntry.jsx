@@ -2,7 +2,7 @@
  * QuickEntry component - Main data entry screen
  * Optimized for quick, one-tap entry of substance usage data
  */
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useEntries } from '../hooks/useEntries';
 import { calculateDelta } from '../utils/calculations';
 
@@ -15,8 +15,31 @@ export default function QuickEntry({ substances }) {
   const [delta, setDelta] = useState(null);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [showFlavorMenu, setShowFlavorMenu] = useState(false);
+  const [showPersonMenu, setShowPersonMenu] = useState(false);
 
   const uniquePeople = getUniquePeople();
+  const flavorRef = useRef(null);
+  const personRef = useRef(null);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (flavorRef.current && !flavorRef.current.contains(event.target)) {
+        setShowFlavorMenu(false);
+      }
+      if (personRef.current && !personRef.current.contains(event.target)) {
+        setShowPersonMenu(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   // Update delta when masses change
   const handleMassChange = (initial, final) => {
@@ -100,38 +123,74 @@ export default function QuickEntry({ substances }) {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Flavor Selection */}
-        <div>
+        {/* Flavor Selection - Button Menu */}
+        <div ref={flavorRef}>
           <label className="label-base">Flavor</label>
-          <select
-            value={selectedSubstance}
-            onChange={(e) => setSelectedSubstance(e.target.value)}
-            className="input-base w-full"
-          >
-            <option value="">Select a flavor...</option>
-            {substances.filter(s => s.active).map(substance => (
-              <option key={substance.id} value={substance.id}>
-                {substance.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowFlavorMenu(!showFlavorMenu)}
+              className="input-base w-full text-left flex justify-between items-center"
+            >
+              <span>{selectedSubstance ? substances.find(s => s.id === selectedSubstance)?.name : 'Select a flavor...'}</span>
+              <span className="text-slate-400">{showFlavorMenu ? '▲' : '▼'}</span>
+            </button>
+            
+            {showFlavorMenu && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg z-50 max-h-64 overflow-y-auto">
+                {substances.filter(s => s.active).map(substance => (
+                  <button
+                    key={substance.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedSubstance(substance.id);
+                      setShowFlavorMenu(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors ${
+                      selectedSubstance === substance.id ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    }`}
+                  >
+                    {substance.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Person Selection */}
-        <div>
+        {/* Person Selection - Button Menu */}
+        <div ref={personRef}>
           <label className="label-base">Person</label>
-          <select
-            value={selectedPerson}
-            onChange={(e) => setSelectedPerson(e.target.value)}
-            className="input-base w-full"
-          >
-            <option value="">Select a person...</option>
-            {uniquePeople.map(person => (
-              <option key={person} value={person}>
-                {person}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowPersonMenu(!showPersonMenu)}
+              className="input-base w-full text-left flex justify-between items-center"
+            >
+              <span>{selectedPerson || 'Select a person...'}</span>
+              <span className="text-slate-400">{showPersonMenu ? '▲' : '▼'}</span>
+            </button>
+            
+            {showPersonMenu && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg z-50 max-h-64 overflow-y-auto">
+                {getUniquePeople().map(person => (
+                  <button
+                    key={person}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPerson(person);
+                      setShowPersonMenu(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors ${
+                      selectedPerson === person ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    }`}
+                  >
+                    {person}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Initial Mass */}

@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { useSubstances } from '../hooks/useSubstances';
 import { useEntries } from '../hooks/useEntries';
-import { getSubstanceRemaining } from '../utils/calculations';
+import { getSubstanceRemaining, getUsageRate, getProjectedDepletion } from '../utils/calculations';
 
 export default function SubstanceManager() {
   const { substances, addSubstance, updateSubstance, deleteSubstance } = useSubstances();
@@ -148,7 +148,11 @@ export default function SubstanceManager() {
           {substances.map(substance => {
             const substanceEntries = getEntriesBySubstance(substance.id);
             const remaining = getSubstanceRemaining(substance, entries);
-            const percentRemaining = (remaining / substance.theoreticalInitialMass * 100).toFixed(1);
+            const usageRate = getUsageRate(substance, entries);
+            const depletion = getProjectedDepletion(substance, entries);
+            const percentRemaining = remaining > 0
+              ? (remaining / substance.theoreticalInitialMass * 100).toFixed(1)
+              : 0;
 
             return (
               <div key={substance.id} className="card">
@@ -170,7 +174,9 @@ export default function SubstanceManager() {
                   </div>
                   <div className="flex justify-between text-slate-300">
                     <span>Remaining:</span>
-                    <span className="font-mono font-bold text-blue-400">{remaining}g</span>
+                    <span className={`font-mono font-bold ${remaining > 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                      {remaining}g
+                    </span>
                   </div>
                   <div className="flex justify-between text-slate-300">
                     <span>Used:</span>
@@ -182,18 +188,50 @@ export default function SubstanceManager() {
                     <span>Entries:</span>
                     <span className="font-mono">{substanceEntries.length}</span>
                   </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Usage Rate:</span>
+                    <span className="font-mono">
+                      {usageRate > 0 ? `${usageRate}g/day` : 'N/A'}
+                    </span>
+                  </div>
+                  {depletion.depleted && (
+                    <div className="flex justify-between text-red-400">
+                      <span>Status:</span>
+                      <span className="font-mono font-bold">DEPLETED</span>
+                    </div>
+                  )}
+                  {!depletion.depleted && depletion.daysRemaining !== null && (
+                    <div className="flex justify-between text-slate-300">
+                      <span>Est. Depletion:</span>
+                      <span className="font-mono">
+                        {depletion.daysRemaining} day{depletion.daysRemaining !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  )}
+                  {!depletion.depleted && depletion.date && (
+                    <div className="flex justify-between text-slate-400 text-xs">
+                      <span>Depletion Date:</span>
+                      <span className="font-mono">
+                        {depletion.date.toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Progress Bar */}
                 <div className="mb-3">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-slate-400">Progress</span>
-                    <span className="text-xs font-mono text-slate-300">{percentRemaining}%</span>
+                    <span className="text-xs text-slate-400">
+                      {remaining > 0 ? 'Remaining' : 'Overconsumption'}
+                    </span>
+                    <span className="text-xs font-mono text-slate-300">
+                      {remaining > 0 ? `${percentRemaining}%` : `${Math.abs(percentRemaining)}% over`}
+                    </span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{ width: `${Math.min(percentRemaining, 100)}%` }}
+                      className={`h-2 rounded-full transition-all ${remaining > 0 ? 'bg-blue-600' : 'bg-red-600'}`}
+                      style={{ width: `${Math.min(Math.abs(percentRemaining), 100)}%` }}
                     />
                   </div>
                 </div>

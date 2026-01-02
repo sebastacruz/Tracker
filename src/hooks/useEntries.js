@@ -15,7 +15,7 @@ export function useEntries() {
     setEntries(data.entries || []);
   }, []);
 
-  const addEntry = useCallback((substanceId, person, initialMass, finalMass) => {
+  const addEntry = useCallback((substanceId, person, initialMass, finalMass, notes = null) => {
     if (!substanceId || !person || typeof initialMass !== 'number' || typeof finalMass !== 'number') {
       throw new Error('Invalid entry data');
     }
@@ -30,6 +30,7 @@ export function useEntries() {
       finalMass: Number(finalMass),
       delta,
       timestamp: new Date().toISOString(),
+      ...(notes && { notes: notes.trim() }), // Only include notes if provided
     };
 
     setEntries(prev => {

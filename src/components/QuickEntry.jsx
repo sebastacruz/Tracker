@@ -12,6 +12,7 @@ export default function QuickEntry({ substances }) {
   const [selectedPerson, setSelectedPerson] = useState('');
   const [initialMass, setInitialMass] = useState('');
   const [finalMass, setFinalMass] = useState('');
+  const [notes, setNotes] = useState('');
   const [delta, setDelta] = useState(null);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -82,13 +83,14 @@ export default function QuickEntry({ substances }) {
     }
 
     try {
-      addEntry(selectedSubstance, selectedPerson, initial, final);
-      
+      addEntry(selectedSubstance, selectedPerson, initial, final, notes || null);
+
       // Reset form
       setSelectedSubstance('');
       setSelectedPerson('');
       setInitialMass('');
       setFinalMass('');
+      setNotes('');
       setDelta(null);
       setSuccess(true);
 
@@ -218,6 +220,22 @@ export default function QuickEntry({ substances }) {
             placeholder="0.00"
             className="input-base w-full text-lg font-semibold"
           />
+        </div>
+
+        {/* Notes (Optional) */}
+        <div>
+          <label className="label-base">Notes (Optional)</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Add any notes about this entry..."
+            className="input-base w-full resize-none"
+            rows="2"
+            maxLength="200"
+          />
+          {notes && (
+            <p className="text-xs text-slate-400 mt-1">{notes.length}/200 characters</p>
+          )}
         </div>
 
         {/* Delta Display */}

@@ -157,3 +157,69 @@ export function getSubstanceStats(substance, entries) {
       : null,
   };
 }
+
+/**
+ * Calculate usage rate (grams per day) for a substance
+ * @param {object} substance - Substance object
+ * @param {array} entries - All entries
+ * @returns {number} - Usage rate in g/day (0 if insufficient data)
+ */
+export function getUsageRate(substance, entries) {
+  const substanceEntries = getEntriesBySubstance(entries, substance.id);
+
+  if (substanceEntries.length < 2) {
+    return 0;
+  }
+
+  const sortedEntries = substanceEntries.sort((a, b) =>
+    new Date(a.timestamp) - new Date(b.timestamp)
+  );
+
+  const firstEntry = new Date(sortedEntries[0].timestamp);
+  const lastEntry = new Date(sortedEntries[sortedEntries.length - 1].timestamp);
+  const daysDiff = (lastEntry - firstEntry) / (1000 * 60 * 60 * 24);
+
+  if (daysDiff === 0) {
+    return 0;
+  }
+
+  const totalUsed = substanceEntries.reduce((sum, e) => sum + e.delta, 0);
+  return Number((totalUsed / daysDiff).toFixed(3));
+}
+
+/**
+ * Calculate projected depletion date for a substance
+ * @param {object} substance - Substance object
+ * @param {array} entries - All entries
+ * @returns {object} - { date: Date|null, daysRemaining: number|null, depleted: boolean }
+ */
+export function getProjectedDepletion(substance, entries) {
+  const remaining = getSubstanceRemaining(substance, entries);
+  const usageRate = getUsageRate(substance, entries);
+
+  if (remaining <= 0) {
+    return {
+      date: null,
+      daysRemaining: 0,
+      depleted: true,
+    };
+  }
+
+  if (usageRate === 0 || entries.length < 2) {
+    return {
+      date: null,
+      daysRemaining: null,
+      depleted: false,
+    };
+  }
+
+  const daysRemaining = Math.ceil(remaining / usageRate);
+  const depletionDate = new Date();
+  depletionDate.setDate(depletionDate.getDate() + daysRemaining);
+
+  return {
+    date: depletionDate,
+    daysRemaining: daysRemaining,
+    depleted: false,
+  };
+}

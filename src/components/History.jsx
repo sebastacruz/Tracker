@@ -105,30 +105,39 @@ export default function History({ substances }) {
                 const substance = substanceLookup[entry.substanceId];
                 const time = formatTimestamp(entry.timestamp);
                 return (
-                  <tr
-                    key={entry.id}
-                    className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
-                  >
-                    <td className="py-3 px-4 text-slate-400 text-xs font-mono">
-                      <div>{time.date}</div>
-                      <div className="text-slate-500">{time.time}</div>
-                    </td>
-                    <td className="py-3 px-4 font-medium">{substance?.name || 'Unknown'}</td>
-                    <td className="py-3 px-4">{entry.person}</td>
-                    <td className="py-3 px-4 text-right font-mono text-slate-300">{entry.initialMass}</td>
-                    <td className="py-3 px-4 text-right font-mono text-slate-300">{entry.finalMass}</td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-blue-400">
-                      {entry.delta}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => deleteEntry(entry.id)}
-                        className="text-red-400 hover:text-red-300 font-medium text-xs"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
+                  <>
+                    <tr
+                      key={entry.id}
+                      className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
+                    >
+                      <td className="py-3 px-4 text-slate-400 text-xs font-mono">
+                        <div>{time.date}</div>
+                        <div className="text-slate-500">{time.time}</div>
+                      </td>
+                      <td className="py-3 px-4 font-medium">{substance?.name || 'Unknown'}</td>
+                      <td className="py-3 px-4">{entry.person}</td>
+                      <td className="py-3 px-4 text-right font-mono text-slate-300">{entry.initialMass}</td>
+                      <td className="py-3 px-4 text-right font-mono text-slate-300">{entry.finalMass}</td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-blue-400">
+                        {entry.delta}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => deleteEntry(entry.id)}
+                          className="text-red-400 hover:text-red-300 font-medium text-xs"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                    {entry.notes && (
+                      <tr key={`${entry.id}-notes`} className="border-b border-slate-800 bg-slate-900/30">
+                        <td colSpan="7" className="py-2 px-4 text-xs text-slate-400 italic">
+                          <span className="text-slate-500">Note:</span> {entry.notes}
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 );
               })}
             </tbody>

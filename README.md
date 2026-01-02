@@ -19,8 +19,8 @@ A simple, mobile-first web app to track substance consumption using mass measure
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/tracker.git
-   cd tracker
+   git clone https://github.com/sebastacruz/Tracker.git
+   cd Tracker
    ```
 
 2. **Install dependencies**:
@@ -32,6 +32,7 @@ A simple, mobile-first web app to track substance consumption using mass measure
    ```bash
    npm run dev
    ```
+   Open `http://localhost:5173/Tracker/` in your browser
 
 4. **Build for production** (GitHub Pages):
    ```bash
@@ -40,15 +41,21 @@ A simple, mobile-first web app to track substance consumption using mass measure
 
 ### Usage on iPhone
 
-1. Open the app in Safari (via `npm run dev` on your Mac or from GitHub Pages)
+1. **Access the app**:
+   - **Development**: `http://YOUR_MAC_IP:5173/Tracker/`
+   - **Live (GitHub Pages)**: `https://sebastacruz.github.io/Tracker/`
+
 2. **First time**:
-   - Add your substances (Apollo, Gramlin, etc.) with theoretical initial mass
-   - Download the `tracker.json` file to your iCloud Files folder
+   - App loads with sample data (Apollo & Gramlin with 9 entries from Jan 1-2, 2026)
+   - You can immediately see historical data and charts
+   - Add your own substances as needed
+
 3. **Daily use**:
-   - Select substance and person
+   - Select substance and person (t, e, or guest)
    - Input initial mass → final mass
    - Tap save
    - View updated remaining mass and trends
+
 4. **Save to home screen**: 
    - Tap the share icon in Safari
    - Select "Add to Home Screen"
@@ -59,6 +66,9 @@ A simple, mobile-first web app to track substance consumption using mass measure
 - **Primary**: Browser's localStorage (on your phone)
 - **Backup/Sync**: Export to JSON file in iCloud Files folder
 - **Analytics**: Read the JSON file from your Mac to analyze data externally
+- **Seed Data**: App comes pre-loaded with sample data (2 substances, 9 entries from Jan 1-2, 2026)
+
+**Users in seed data**: t (7 entries), e (2 entries), guest (available)
 
 **Data format**: See [PLAN.md](PLAN.md#data-schema) for JSON schema
 

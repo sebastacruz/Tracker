@@ -3,14 +3,24 @@
 ## Get Started Immediately
 
 ```bash
-# 1. Install dependencies
+# 1. Load NVM (first time setup)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# 2. Install dependencies (first time only)
 npm install
 
-# 2. Start development server
+# 3. Start development server
 npm run dev
 
-# 3. Open http://localhost:5173 in browser
-# App will auto-open in your default browser
+# 4. Open http://localhost:5173/Tracker/ in browser
+```
+
+**Tip**: Add NVM to your `.zshrc` to avoid step 1 next time:
+```bash
+echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
+echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ## Test on iPhone

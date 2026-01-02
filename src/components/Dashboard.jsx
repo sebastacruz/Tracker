@@ -10,9 +10,20 @@ const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'
 
 export default function Dashboard({ substances }) {
   const { entries } = useEntries();
-  const [selectedSubstances, setSelectedSubstances] = useState([substances[0]?.id || '']);
+  const [selectedSubstances, setSelectedSubstances] = useState(() => {
+    const activeSubstances = substances.filter(s => s.active);
+    return activeSubstances.length > 0 ? [activeSubstances[0].id] : [];
+  });
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+
+  // Update selectedSubstances when substances change
+  useEffect(() => {
+    const activeSubstances = substances.filter(s => s.active);
+    if (activeSubstances.length > 0 && selectedSubstances.length === 0) {
+      setSelectedSubstances([activeSubstances[0].id]);
+    }
+  }, [substances]);
 
   // Close menu when clicking outside
   useEffect(() => {

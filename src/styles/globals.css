@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force dark theme */
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  @apply bg-slate-950 text-slate-50;
+  min-height: 100%;
+  min-height: 100vh;
+}
+
+/* Base styles */
+button {
+  @apply transition-colors duration-150;
+}
+
+button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+input, textarea, select {
+  @apply transition-colors duration-150;
+}
+
+/* Utility classes */
+.card {
+  @apply bg-slate-900 rounded-lg p-4 border border-slate-800;
+}
+
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg;
+}
+
+.input-base {
+  @apply bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+}
+
+.label-base {
+  @apply block text-sm font-medium text-slate-300 mb-2;
+}

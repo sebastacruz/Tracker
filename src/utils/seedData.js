@@ -8,14 +8,14 @@ const SEED_DATA = {
     {
       id: 'substance-apollo',
       name: 'Apollo',
-      theoreticalInitialMass: 33.13,
+      theoreticalInitialMass: 1,
       createdAt: '2026-01-01T00:00:00Z',
       active: true,
     },
     {
       id: 'substance-gramlin',
       name: 'Gramlin',
-      theoreticalInitialMass: 45.68,
+      theoreticalInitialMass: 1,
       createdAt: '2026-01-01T00:00:00Z',
       active: true,
     },
@@ -142,6 +142,33 @@ export function initializeSeedData() {
   }
 
   return false;
+}
+
+/**
+ * Migrate existing substances to 1g if they were from old seed data
+ */
+export function migrateSubstances() {
+  const STORAGE_KEY = 'tracker_data';
+  const existingData = localStorage.getItem(STORAGE_KEY);
+
+  if (existingData) {
+    try {
+      const data = JSON.parse(existingData);
+      // Update Apollo and Gramlin to 1g if they exist
+      if (data.substances) {
+        data.substances = data.substances.map(sub => {
+          if (sub.id === 'substance-apollo' || sub.id === 'substance-gramlin') {
+            return { ...sub, theoreticalInitialMass: 1 };
+          }
+          return sub;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        console.log('✅ Substances migrated to 1g default');
+      }
+    } catch (error) {
+      console.error('Error during migration:', error);
+    }
+  }
 }
 
 /**

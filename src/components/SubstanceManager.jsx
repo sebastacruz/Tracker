@@ -12,7 +12,7 @@ export default function SubstanceManager() {
   
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
-  const [theoreticalMass, setTheoreticalMass] = useState('');
+  const [theoreticalMass, setTheoreticalMass] = useState('1');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -119,7 +119,7 @@ export default function SubstanceManager() {
                 onClick={() => {
                   setShowForm(false);
                   setName('');
-                  setTheoreticalMass('');
+                  setTheoreticalMass('1');
                   setError('');
                 }}
                 className="btn-secondary flex-1"

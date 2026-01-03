@@ -1,8 +1,10 @@
 # Development Log
 
 ## Project: Substance Usage Tracker
-**Start Date**: January 2, 2026  
-**Status**: Complete - Live on GitHub Pages & Ready for Production Use
+**Start Date**: January 2, 2026
+**Current Version**: 1.0.0
+**Status**: ✅ Production - Live on GitHub Pages
+**Live URL**: https://sebastacruz.github.io/Tracker/
 
 ---
 
@@ -74,43 +76,49 @@
 
 ---
 
-## Phase 3: Core Features Implementation
+## Phase 3: Core Features Implementation ✅
 
-### To Do
-1. **Data Management**
-   - [ ] `useSubstances` hook (CRUD operations)
-   - [ ] `useEntries` hook (CRUD operations)
-   - [ ] localStorage utilities
-   - [ ] JSON export/import functions
-   - [ ] UUID generation
+### Completed (January 2-3, 2026)
 
-2. **Substance Management**
-   - [ ] SubstanceForm component (add/edit)
-   - [ ] SubstanceList component
-   - [ ] Edit & delete functionality
+1. **Data Management** ✅
+   - [x] `useSubstances` hook (CRUD operations)
+   - [x] `useEntries` hook (CRUD operations)
+   - [x] localStorage utilities
+   - [x] JSON export/import functions
+   - [x] UUID generation
 
-3. **Quick Entry**
-   - [ ] QuickEntry component (main data entry)
-   - [ ] Form validation
-   - [ ] Auto-calculation (delta)
-   - [ ] Person dropdown
-   - [ ] Success feedback
+2. **Substance Management** ✅
+   - [x] SubstanceManager component (add/delete)
+   - [x] Substance cards with progress bars
+   - [x] Delete functionality with confirmation
+   - [x] Active/inactive substance toggling
 
-4. **Historical View**
-   - [ ] HistoryList component (all entries)
-   - [ ] Sorting (by date, substance, person)
-   - [ ] Date filtering
+3. **Quick Entry** ✅
+   - [x] QuickEntry component (main data entry)
+   - [x] Form validation
+   - [x] Auto-calculation (delta)
+   - [x] Person dropdown with autocomplete
+   - [x] Success feedback
+   - [x] Optional notes field
 
-5. **Dashboard & Charts**
-   - [ ] Dashboard component
-   - [ ] Remaining mass over time (line chart)
-   - [ ] Usage per entry (bar chart)
-   - [ ] Filter UI
+4. **Historical View** ✅
+   - [x] History component (all entries)
+   - [x] Filtering by substance and person
+   - [x] Sort by date (newest first)
+   - [x] Entry details display
 
-6. **Data Export**
-   - [ ] CSV export function
-   - [ ] JSON export button
-   - [ ] Download to file
+5. **Dashboard & Charts** ✅
+   - [x] Dashboard component
+   - [x] Remaining mass over time (line chart)
+   - [x] Usage by person (bar chart)
+   - [x] Usage by substance (bar chart)
+   - [x] Multi-substance selection filter
+
+6. **Data Export** ✅
+   - [x] CSV export function
+   - [x] JSON export function
+   - [x] Browser download functionality
+   - [x] Import from JSON
 
 ---
 
@@ -233,33 +241,118 @@ App
 
 ---
 
-## Progress Summary
+## Version 1.0.0 Features Summary
+
+### Completed Features
+
+- ✅ Quick Entry interface for rapid data logging
+- ✅ Substance Manager (add, delete, view remaining mass)
+- ✅ Dashboard with interactive charts (Recharts)
+  - Line chart: Remaining mass over time
+  - Bar charts: Usage by person and substance
+  - Multi-substance selection filter
+- ✅ History view with filtering and sorting
+- ✅ Settings view with export/import
+  - JSON export for backup
+  - CSV export for external analysis
+  - Import from JSON
+  - Clear all data function
+- ✅ Dark theme optimized for mobile battery life
+- ✅ localStorage persistence
+- ✅ Sample seed data for onboarding
+- ✅ Optional notes field for entries
+- ✅ Real-time delta calculation
+- ✅ Progress bars for substance depletion
+- ✅ Responsive design for iPhone Safari
+
+### Progress Summary
 
 | Phase | Status | Completion |
 |-------|--------|-----------|
 | Planning & Documentation | ✅ Complete | 100% |
-| Project Scaffolding | ⏳ Next | 0% |
-| Core Features | 📋 Planned | 0% |
-| Polish & Deployment | 📋 Planned | 0% |
+| Project Scaffolding | ✅ Complete | 100% |
+| Core Features | ✅ Complete | 100% |
+| Polish & Deployment | ✅ Complete | 100% |
+| **v1.0.0 Production** | ✅ **LIVE** | **100%** |
 
 ---
 
-## Questions & Blockers
+## Implementation Notes & Lessons Learned
 
-**Q**: Should we add a "notes" field to each entry?  
-**A**: Defer to Phase 2 review; MVP focuses on mass tracking only.
+### Key Technical Decisions
 
-**Q**: Do we need offline mode?  
-**A**: Not required; app assumes always-online (mobile use).
+1. **localStorage Over Cloud Database**
+   - Rationale: Privacy-first, no backend costs, instant access
+   - Trade-off: Manual sync required, single-device primary storage
+   - Solution: Export/import via JSON for backup and multi-device use
 
-**Q**: Container mass accuracy after substance depletion?  
-**A**: Final measurement when substance runs out will reveal container mass with certainty.
+2. **Vite Over Create React App**
+   - Rationale: Faster build times, better dev experience, smaller bundle
+   - Benefit: HMR (Hot Module Replacement) dramatically speeds up development
+
+3. **Recharts Over Chart.js**
+   - Rationale: React-native API, smaller bundle, good mobile performance
+   - Benefit: Declarative component syntax matches React patterns
+
+4. **Dark Theme Only**
+   - Rationale: Mobile battery efficiency, evening use case
+   - Implementation: CSS forced dark mode + Tailwind dark theme utilities
+
+5. **Container Mass Strategy**
+   - Initial uncertainty about container tare weight
+   - Solution: Set theoretical initial mass to 1g (substance only)
+   - When depleted, final measurement reveals actual container mass
+
+### Challenges Overcome
+
+1. **Mobile Safari Dropdown Issues**
+   - Problem: Native select dropdowns behaving inconsistently on iOS
+   - Solution: Styled native select elements with proper touch targets
+
+2. **Chart Data Computation Performance**
+   - Problem: Re-calculating chart data on every render
+   - Solution: useMemo hooks for derived chart data
+
+3. **Seed Data Integration**
+   - Problem: How to provide sample data without forcing migrations
+   - Solution: seedData.js with conditional initialization on first load
+
+4. **GitHub Pages Base Path**
+   - Problem: Assets not loading on GitHub Pages subdirectory
+   - Solution: Vite config `base: '/Tracker/'` for proper URL resolution
+
+### Future Improvement Ideas (Out of Current Scope)
+
+- [ ] PWA offline support with service workers
+- [ ] Real-time cloud sync (Firebase/Supabase)
+- [ ] Multi-user authentication
+- [ ] Advanced analytics (ML predictions for depletion dates)
+- [ ] Native mobile app (React Native)
+- [ ] Dark/light theme toggle
+- [ ] Undo/redo functionality
+- [ ] Bulk data operations (delete multiple entries)
 
 ---
 
-## Next Steps
+## Questions Resolved
 
-1. Create Vite project with React template
-2. Install & configure dependencies
-3. Set up folder structure & base components
-4. Begin Phase 3: Core features implementation
+**Q**: Should we add a "notes" field to each entry?
+**A**: ✅ **Implemented in v1.0.0** - Added optional notes field
+
+**Q**: Do we need offline mode?
+**A**: Not for v1.0.0; localStorage works offline by default, manual sync acceptable
+
+**Q**: Container mass accuracy after substance depletion?
+**A**: ✅ **Resolved** - Theoretical initial mass set to 1g (substance only); final measurement reveals container mass
+
+---
+
+## Project Timeline
+
+| Date | Milestone |
+|------|-----------|
+| 2026-01-02 | Project inception, planning, and scaffolding |
+| 2026-01-02 | Core features implemented (Quick Entry, Dashboard, History) |
+| 2026-01-02 | GitHub Pages deployment successful |
+| 2026-01-03 | v1.0.0 release with usage analytics and notes feature |
+| 2026-01-03 | Documentation cleanup and project initialization |

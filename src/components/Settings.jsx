@@ -163,7 +163,7 @@ export default function Settings() {
         </button>
 
         <p className="text-xs text-red-400 mt-3">
-          ⚠️ Warning: This will permanently delete all substances and entries. Make sure you've exported your data first!
+          ⚠️ Warning: This will permanently delete all substances and entries. Make sure you&apos;ve exported your data first!
         </p>
       </div>
 
@@ -175,14 +175,14 @@ export default function Settings() {
           <div>
             <h4 className="font-semibold mb-2">Where does my data live?</h4>
             <p className="text-slate-400">
-              Data is stored in your browser's localStorage on your phone. When you export, it creates a file that you control.
+              Data is stored in your browser&apos;s localStorage on your phone. When you export, it creates a file that you control.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">How do I back up my data?</h4>
             <p className="text-slate-400">
-              Click "Download JSON" to save your complete data. Store it safely, or upload it to iCloud Drive.
+              Click &ldquo;Download JSON&rdquo; to save your complete data. Store it safely, or upload it to iCloud Drive.
             </p>
           </div>
 

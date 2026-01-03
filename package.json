@@ -1,8 +1,25 @@
 {
   "name": "substance-tracker",
+  "version": "1.0.0",
+  "description": "Privacy-first web app for tracking substance consumption using mass measurements",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
+  "author": "Sebastacruz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sebastacruz/Tracker.git"
+  },
+  "homepage": "https://sebastacruz.github.io/Tracker/",
+  "keywords": [
+    "substance-tracker",
+    "mass-tracking",
+    "react",
+    "vite",
+    "tailwindcss",
+    "recharts",
+    "privacy-first"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

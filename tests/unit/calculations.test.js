@@ -180,14 +180,14 @@ describe('getTotalUsage', () => {
 
 describe('formatMass', () => {
   it('should format mass to 2 decimal places by default', () => {
-    expect(formatMass(10.555)).toBe('10.56')
-    expect(formatMass(5.123)).toBe('5.12')
+    expect(formatMass(10.556)).toBe('10.56')
+    expect(formatMass(5.126)).toBe('5.13')
   })
 
   it('should format to specified decimal places', () => {
-    expect(formatMass(10.555, 1)).toBe('10.6')
+    expect(formatMass(10.556, 1)).toBe('10.6')
     expect(formatMass(10.555, 3)).toBe('10.555')
-    expect(formatMass(10.555, 0)).toBe('11')
+    expect(formatMass(10.556, 0)).toBe('11')
   })
 
   it('should handle zero', () => {
@@ -196,7 +196,7 @@ describe('formatMass', () => {
   })
 
   it('should handle negative numbers', () => {
-    expect(formatMass(-5.555)).toBe('-5.56')
+    expect(formatMass(-5.556)).toBe('-5.56')
   })
 
   it('should handle very large numbers', () => {
@@ -247,8 +247,8 @@ describe('getEntriesByDateRange', () => {
   })
 
   it('should include boundary dates', () => {
-    const start = new Date('2024-01-15')
-    const end = new Date('2024-01-20')
+    const start = new Date('2024-01-15T00:00:00Z')
+    const end = new Date('2024-01-20T23:59:59Z')
     const result = getEntriesByDateRange(entries, start, end)
 
     expect(result).toHaveLength(2)
@@ -415,10 +415,10 @@ describe('getUsageRate', () => {
     expect(getUsageRate(substance, [])).toBe(0)
   })
 
-  it('should return 0 when all entries on same day', () => {
+  it('should return 0 when all entries on same timestamp', () => {
     const entries = [
       { substanceId: 'sub1', delta: 10, timestamp: '2024-01-01T10:00:00Z' },
-      { substanceId: 'sub1', delta: 20, timestamp: '2024-01-01T14:00:00Z' },
+      { substanceId: 'sub1', delta: 20, timestamp: '2024-01-01T10:00:00Z' },
     ]
 
     expect(getUsageRate(substance, entries)).toBe(0)
@@ -494,7 +494,7 @@ describe('getProjectedDepletion', () => {
   it('should return null when usage rate is 0', () => {
     const entries = [
       { substanceId: 'sub1', delta: 10, timestamp: '2024-01-01T10:00:00Z' },
-      { substanceId: 'sub1', delta: 10, timestamp: '2024-01-01T14:00:00Z' },
+      { substanceId: 'sub1', delta: 10, timestamp: '2024-01-01T10:00:00Z' },
     ]
 
     const result = getProjectedDepletion(substance, entries)

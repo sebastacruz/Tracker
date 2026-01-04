@@ -76,3 +76,4 @@ tracker-*.json
 .claude/
 .mcp.json
 .playwright-mcp/
+code_review_templates

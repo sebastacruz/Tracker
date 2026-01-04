@@ -2,9 +2,21 @@
  * QuickEntry component - Main data entry screen
  * Optimized for quick, one-tap entry of substance usage data
  */
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useEntries } from '../hooks/useEntries';
 import { calculateDelta } from '../utils/calculations';
+
+/**
+ * Sanitize input to prevent XSS attacks
+ * Removes potentially dangerous HTML/script content
+ */
+function sanitizeInput(input) {
+  if (!input || typeof input !== 'string') return '';
+
+  const div = document.createElement('div');
+  div.textContent = input;
+  return div.innerHTML;
+}
 
 export default function QuickEntry({ substances }) {
   const { addEntry, getUniquePeople } = useEntries();
@@ -19,7 +31,6 @@ export default function QuickEntry({ substances }) {
   const [showFlavorMenu, setShowFlavorMenu] = useState(false);
   const [showPersonMenu, setShowPersonMenu] = useState(false);
 
-  const uniquePeople = getUniquePeople();
   const flavorRef = useRef(null);
   const personRef = useRef(null);
 
@@ -42,17 +53,52 @@ export default function QuickEntry({ substances }) {
     };
   }, []);
 
+  // Validate mass input (must be non-negative number)
+  const isValidMass = (value) => {
+    if (!value) return false;
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  };
+
+  // Validate form state for submit button
+  const isFormValid = useMemo(() => {
+    return (
+      selectedSubstance && selectedPerson && isValidMass(initialMass) && isValidMass(finalMass)
+    );
+  }, [selectedSubstance, selectedPerson, initialMass, finalMass]);
+
+  // Get validation feedback for mass inputs
+  const getMassValidation = (mass) => {
+    if (!mass) return { valid: null, message: '' };
+    const num = parseFloat(mass);
+    if (isNaN(num)) {
+      return { valid: false, message: 'Must be a number' };
+    }
+    if (num < 0) {
+      return { valid: false, message: 'Cannot be negative' };
+    }
+    return { valid: true, message: '' };
+  };
+
   // Update delta when masses change
   const handleMassChange = (initial, final) => {
     setInitialMass(initial);
     setFinalMass(final);
 
-    if (initial && final) {
-      const calculated = calculateDelta(parseFloat(initial), parseFloat(final));
+    if (initial && final && isValidMass(initial) && isValidMass(final)) {
+      const initialNum = parseFloat(initial);
+      const finalNum = parseFloat(final);
+      const calculated = calculateDelta(initialNum, finalNum);
       setDelta(calculated);
     } else {
       setDelta(null);
     }
+  };
+
+  const handleNotesChange = (value) => {
+    // Sanitize input to prevent XSS
+    const sanitized = sanitizeInput(value);
+    setNotes(sanitized);
   };
 
   const handleSubmit = (e) => {
@@ -69,18 +115,17 @@ export default function QuickEntry({ substances }) {
       setError('Please enter a person name');
       return;
     }
-    if (!initialMass || !finalMass) {
-      setError('Please enter both initial and final mass');
+    if (!isValidMass(initialMass)) {
+      setError('Initial mass must be a non-negative number');
+      return;
+    }
+    if (!isValidMass(finalMass)) {
+      setError('Final mass must be a non-negative number');
       return;
     }
 
     const initial = parseFloat(initialMass);
     const final = parseFloat(finalMass);
-
-    if (isNaN(initial) || isNaN(final)) {
-      setError('Please enter valid numbers');
-      return;
-    }
 
     try {
       addEntry(selectedSubstance, selectedPerson, initial, final, notes || null);
@@ -134,27 +179,35 @@ export default function QuickEntry({ substances }) {
               onClick={() => setShowFlavorMenu(!showFlavorMenu)}
               className="input-base w-full text-left flex justify-between items-center"
             >
-              <span>{selectedSubstance ? substances.find(s => s.id === selectedSubstance)?.name : 'Select a flavor...'}</span>
+              <span>
+                {selectedSubstance
+                  ? substances.find((s) => s.id === selectedSubstance)?.name
+                  : 'Select a flavor...'}
+              </span>
               <span className="text-slate-400">{showFlavorMenu ? '▲' : '▼'}</span>
             </button>
-            
+
             {showFlavorMenu && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg z-50 max-h-64 overflow-y-auto">
-                {substances.filter(s => s.active).map(substance => (
-                  <button
-                    key={substance.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedSubstance(substance.id);
-                      setShowFlavorMenu(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors ${
-                      selectedSubstance === substance.id ? 'bg-blue-600 text-white' : 'text-slate-300'
-                    }`}
-                  >
-                    {substance.name}
-                  </button>
-                ))}
+                {substances
+                  .filter((s) => s.active)
+                  .map((substance) => (
+                    <button
+                      key={substance.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSubstance(substance.id);
+                        setShowFlavorMenu(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors ${
+                        selectedSubstance === substance.id
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-300'
+                      }`}
+                    >
+                      {substance.name}
+                    </button>
+                  ))}
               </div>
             )}
           </div>
@@ -172,10 +225,10 @@ export default function QuickEntry({ substances }) {
               <span>{selectedPerson || 'Select a person...'}</span>
               <span className="text-slate-400">{showPersonMenu ? '▲' : '▼'}</span>
             </button>
-            
+
             {showPersonMenu && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg z-50 max-h-64 overflow-y-auto">
-                {getUniquePeople().map(person => (
+                {getUniquePeople().map((person) => (
                   <button
                     key={person}
                     type="button"
@@ -204,9 +257,14 @@ export default function QuickEntry({ substances }) {
             value={initialMass}
             onChange={(e) => handleMassChange(e.target.value, finalMass)}
             placeholder="0.00"
-            className="input-base w-full text-lg font-semibold"
+            className={`input-base w-full text-lg font-semibold ${
+              getMassValidation(initialMass).valid === false ? 'border-red-500' : ''
+            }`}
             autoFocus
           />
+          {getMassValidation(initialMass).message && (
+            <p className="text-xs text-red-400 mt-1">⚠️ {getMassValidation(initialMass).message}</p>
+          )}
         </div>
 
         {/* Final Mass */}
@@ -218,8 +276,13 @@ export default function QuickEntry({ substances }) {
             value={finalMass}
             onChange={(e) => handleMassChange(initialMass, e.target.value)}
             placeholder="0.00"
-            className="input-base w-full text-lg font-semibold"
+            className={`input-base w-full text-lg font-semibold ${
+              getMassValidation(finalMass).valid === false ? 'border-red-500' : ''
+            }`}
           />
+          {getMassValidation(finalMass).message && (
+            <p className="text-xs text-red-400 mt-1">⚠️ {getMassValidation(finalMass).message}</p>
+          )}
         </div>
 
         {/* Notes (Optional) */}
@@ -227,15 +290,13 @@ export default function QuickEntry({ substances }) {
           <label className="label-base">Notes (Optional)</label>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => handleNotesChange(e.target.value)}
             placeholder="Add any notes about this entry..."
             className="input-base w-full resize-none"
             rows="2"
             maxLength="200"
           />
-          {notes && (
-            <p className="text-xs text-slate-400 mt-1">{notes.length}/200 characters</p>
-          )}
+          {notes && <p className="text-xs text-slate-400 mt-1">{notes.length}/200 characters</p>}
         </div>
 
         {/* Delta Display */}
@@ -249,7 +310,12 @@ export default function QuickEntry({ substances }) {
         {/* Submit Button */}
         <button
           type="submit"
-          className="btn-primary w-full py-3 text-lg font-bold"
+          disabled={!isFormValid}
+          className={`w-full py-3 text-lg font-bold rounded-lg transition-colors ${
+            isFormValid
+              ? 'btn-primary cursor-pointer'
+              : 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50'
+          }`}
         >
           💾 Save Entry
         </button>
@@ -260,8 +326,12 @@ export default function QuickEntry({ substances }) {
         <p className="font-semibold mb-2">💡 How it works:</p>
         <ol className="list-decimal list-inside space-y-1">
           <li>Select or add a substance</li>
-          <li>Enter the scale reading <strong>before</strong> use (Initial)</li>
-          <li>Enter the scale reading <strong>after</strong> use (Final)</li>
+          <li>
+            Enter the scale reading <strong>before</strong> use (Initial)
+          </li>
+          <li>
+            Enter the scale reading <strong>after</strong> use (Final)
+          </li>
           <li>Delta is calculated automatically</li>
           <li>Tap save to record the entry</li>
         </ol>

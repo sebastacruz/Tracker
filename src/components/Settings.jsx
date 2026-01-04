@@ -3,13 +3,20 @@
  */
 import { useEntries } from '../hooks/useEntries';
 import { useSubstances } from '../hooks/useSubstances';
-import { exportAsJSON, exportAsCSV, clearAllData } from '../utils/storage';
+import {
+  exportAsJSON,
+  exportAsCSV,
+  clearAllData,
+  importFromJSON,
+  saveData,
+} from '../utils/storage';
 import { useState } from 'react';
 
 export default function Settings() {
   const { substances } = useSubstances();
   const { entries } = useEntries();
   const [exportSuccess, setExportSuccess] = useState('');
+  const [importMessage, setImportMessage] = useState({ type: '', text: '' });
 
   const handleExportJSON = () => {
     const data = {
@@ -35,6 +42,40 @@ export default function Settings() {
     clearAllData();
   };
 
+  const handleImportJSON = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const importedData = await importFromJSON(file);
+
+      // Validate the imported data structure
+      if (!importedData.substances || !importedData.entries) {
+        throw new Error('Invalid backup file format');
+      }
+
+      // Save the imported data to localStorage
+      saveData(importedData);
+
+      // Show success message
+      setImportMessage({ type: 'success', text: 'Data imported successfully! Reloading...' });
+
+      // Reload the page after a short delay to refresh all state
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      setImportMessage({
+        type: 'error',
+        text: `Import failed: ${error.message}`,
+      });
+      setTimeout(() => setImportMessage({ type: '', text: '' }), 5000);
+    }
+
+    // Reset file input
+    event.target.value = '';
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
       {/* Header */}
@@ -49,6 +90,52 @@ export default function Settings() {
           {exportSuccess}
         </div>
       )}
+
+      {/* Import Message */}
+      {importMessage.text && (
+        <div
+          className={`mb-4 p-4 rounded-lg border ${
+            importMessage.type === 'success'
+              ? 'bg-emerald-950/50 border-emerald-700 text-emerald-200'
+              : 'bg-red-950/50 border-red-700 text-red-200'
+          }`}
+        >
+          {importMessage.text}
+        </div>
+      )}
+
+      {/* Data Import Section */}
+      <div className="card mb-6">
+        <h3 className="text-lg font-bold mb-4">Import Data</h3>
+        <p className="text-slate-400 text-sm mb-4">Restore your data from a backup JSON file.</p>
+
+        <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h4 className="font-semibold mb-1">Import from JSON Backup</h4>
+              <p className="text-sm text-slate-400">
+                Select a JSON backup file to restore all your substances and entries.
+              </p>
+            </div>
+            <div>
+              <label className="btn-primary cursor-pointer inline-block">
+                Choose Backup File
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={handleImportJSON}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 bg-amber-950/50 border border-amber-700 rounded-lg text-amber-200 text-sm">
+          ⚠️ Warning: Importing will replace all existing data. Make sure to export your current
+          data first if you want to keep it!
+        </div>
+      </div>
 
       {/* Data Export Section */}
       <div className="card mb-6">
@@ -189,10 +276,18 @@ export default function Settings() {
           </div>
 
           <div>
+            <h4 className="font-semibold mb-2">How do I restore my data from a backup?</h4>
+            <p className="text-slate-400">
+              Use the &ldquo;Choose Backup File&rdquo; button above to select your JSON backup file.
+              The app will restore all your substances and entries automatically.
+            </p>
+          </div>
+
+          <div>
             <h4 className="font-semibold mb-2">What if I lose my phone?</h4>
             <p className="text-slate-400">
-              Your exported JSON files in iCloud Drive persist. Reinstall the app and re-import your
-              data.
+              Your exported JSON files in iCloud Drive persist. Reinstall the app, import your
+              backup, and you&apos;re back in business!
             </p>
           </div>
 

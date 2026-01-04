@@ -2,16 +2,36 @@
  * Dashboard component - Visual analytics with charts
  */
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import { useEntries } from '../hooks/useEntries';
 import { getSubstanceRemaining, formatTimestamp } from '../utils/calculations';
 
-const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+const COLORS = [
+  '#2E6F40',
+  '#358D47',
+  '#6B8E6B',
+  '#10b981',
+  '#8b5cf6',
+  '#ec4899',
+  '#06b6d4',
+  '#f97316',
+];
 
 export default function Dashboard({ substances }) {
   const { entries } = useEntries();
   const [selectedSubstances, setSelectedSubstances] = useState(() => {
-    const activeSubstances = substances.filter(s => s.active);
+    const activeSubstances = substances.filter((s) => s.active);
     return activeSubstances.length > 0 ? [activeSubstances[0].id] : [];
   });
   const [showMenu, setShowMenu] = useState(false);
@@ -19,7 +39,7 @@ export default function Dashboard({ substances }) {
 
   // Update selectedSubstances when substances change
   useEffect(() => {
-    const activeSubstances = substances.filter(s => s.active);
+    const activeSubstances = substances.filter((s) => s.active);
     if (activeSubstances.length > 0 && selectedSubstances.length === 0) {
       setSelectedSubstances([activeSubstances[0].id]);
     }
@@ -42,9 +62,9 @@ export default function Dashboard({ substances }) {
   }, []);
 
   const toggleSubstance = (substanceId) => {
-    setSelectedSubstances(prev => {
+    setSelectedSubstances((prev) => {
       if (prev.includes(substanceId)) {
-        return prev.filter(id => id !== substanceId);
+        return prev.filter((id) => id !== substanceId);
       } else {
         return [...prev, substanceId];
       }
@@ -65,7 +85,7 @@ export default function Dashboard({ substances }) {
 
     // Get all entries and sort by timestamp
     const allEntries = entries
-      .filter(e => selectedSubstances.includes(e.substanceId))
+      .filter((e) => selectedSubstances.includes(e.substanceId))
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
     if (allEntries.length === 0) return [];
@@ -75,11 +95,11 @@ export default function Dashboard({ substances }) {
     const substanceRunning = {};
 
     // Initialize running totals
-    selectedSubstances.forEach(id => {
+    selectedSubstances.forEach((id) => {
       substanceRunning[id] = 0;
     });
 
-    allEntries.forEach(entry => {
+    allEntries.forEach((entry) => {
       substanceRunning[entry.substanceId] += entry.delta;
       const time = formatTimestamp(entry.timestamp);
       const key = `${time.date} ${time.time}`;
@@ -103,10 +123,10 @@ export default function Dashboard({ substances }) {
   const usageByPersonData = useMemo(() => {
     if (selectedSubstances.length === 0) return [];
 
-    const substanceEntries = entries.filter(e => selectedSubstances.includes(e.substanceId));
+    const substanceEntries = entries.filter((e) => selectedSubstances.includes(e.substanceId));
 
     const personMap = {};
-    substanceEntries.forEach(entry => {
+    substanceEntries.forEach((entry) => {
       if (!personMap[entry.person]) {
         personMap[entry.person] = 0;
       }
@@ -124,8 +144,8 @@ export default function Dashboard({ substances }) {
   // Chart 3: All substances remaining
   const allSubstancesData = useMemo(() => {
     return substances
-      .filter(s => s.active)
-      .map(substance => {
+      .filter((s) => s.active)
+      .map((substance) => {
         const remaining = getSubstanceRemaining(substance, entries);
         return {
           name: substance.name,
@@ -163,33 +183,35 @@ export default function Dashboard({ substances }) {
           className="input-base w-full text-left flex justify-between items-center"
         >
           <span className="truncate">
-            {selectedSubstances.length === 0 
-              ? 'No flavors selected' 
+            {selectedSubstances.length === 0
+              ? 'No flavors selected'
               : selectedSubstances.length === 1
-              ? substances.find(s => s.id === selectedSubstances[0])?.name
-              : `${selectedSubstances.length} flavors selected`}
+                ? substances.find((s) => s.id === selectedSubstances[0])?.name
+                : `${selectedSubstances.length} flavors selected`}
           </span>
           <span className="text-slate-400">{showMenu ? '▲' : '▼'}</span>
         </button>
 
         {showMenu && (
           <div className="absolute mt-1 w-full max-w-md bg-slate-800 border border-slate-700 rounded-lg z-50 max-h-64 overflow-y-auto">
-            {substances.filter(s => s.active).map(substance => (
-              <button
-                key={substance.id}
-                type="button"
-                onClick={() => toggleSubstance(substance.id)}
-                className="w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors flex items-center gap-2 text-slate-300"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedSubstances.includes(substance.id)}
-                  onChange={() => {}}
-                  className="w-4 h-4 cursor-pointer"
-                />
-                {substance.name}
-              </button>
-            ))}
+            {substances
+              .filter((s) => s.active)
+              .map((substance) => (
+                <button
+                  key={substance.id}
+                  type="button"
+                  onClick={() => toggleSubstance(substance.id)}
+                  className="w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors flex items-center gap-2 text-slate-300"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedSubstances.includes(substance.id)}
+                    onChange={() => {}}
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                  {substance.name}
+                </button>
+              ))}
           </div>
         )}
       </div>
@@ -203,16 +225,12 @@ export default function Dashboard({ substances }) {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={remainingOverTimeData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis
-                  dataKey="date"
-                  stroke="#94a3b8"
-                  style={{ fontSize: '12px' }}
-                />
+                <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: '12px' }} />
                 <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#1A1A1A',
+                    border: '1px solid #303030',
                     borderRadius: '8px',
                   }}
                   labelStyle={{ color: '#e2e8f0' }}
@@ -249,21 +267,17 @@ export default function Dashboard({ substances }) {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={usageByPersonData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis
-                  dataKey="name"
-                  stroke="#94a3b8"
-                  style={{ fontSize: '12px' }}
-                />
+                <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '12px' }} />
                 <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: '#1A1A1A',
+                    border: '1px solid #303030',
                     borderRadius: '8px',
                   }}
                   labelStyle={{ color: '#e2e8f0' }}
                 />
-                <Bar dataKey="usage" fill="#3b82f6" name="Usage (g)" />
+                <Bar dataKey="usage" fill="#2E6F40" name="Usage (g)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -281,11 +295,7 @@ export default function Dashboard({ substances }) {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={allSubstancesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis
-                dataKey="name"
-                stroke="#94a3b8"
-                style={{ fontSize: '12px' }}
-              />
+              <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '12px' }} />
               <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
               <Tooltip
                 contentStyle={{
@@ -296,7 +306,7 @@ export default function Dashboard({ substances }) {
                 labelStyle={{ color: '#e2e8f0' }}
               />
               <Legend />
-              <Bar dataKey="remaining" fill="#3b82f6" name="Remaining (g)" />
+              <Bar dataKey="remaining" fill="#2E6F40" name="Remaining (g)" />
               <Bar dataKey="used" fill="#ef4444" name="Used (g)" />
             </BarChart>
           </ResponsiveContainer>

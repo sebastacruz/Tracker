@@ -15,7 +15,7 @@ import { getSubstanceRemaining, getUsageRate, getProjectedDepletion } from '../u
 export default function SubstanceManager() {
   const { substances, addSubstance, updateSubstance, deleteSubstance } = useSubstances();
   const { entries, getEntriesBySubstance } = useEntries();
-  
+
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [theoreticalMass, setTheoreticalMass] = useState('1');
@@ -59,8 +59,8 @@ export default function SubstanceManager() {
 
       {/* Success Message */}
       {success && (
-        <div className="mb-4 p-4 bg-green-900 border border-green-700 rounded-lg text-green-100">
-          ✅ {success}
+        <div className="mb-4 p-4 bg-emerald-950/50 border border-emerald-700 rounded-lg text-emerald-200">
+          {success}
         </div>
       )}
 
@@ -73,10 +73,7 @@ export default function SubstanceManager() {
 
       {/* Add Substance Button */}
       {!showForm && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="btn-primary mb-6"
-        >
+        <button onClick={() => setShowForm(true)} className="btn-primary mb-6">
           + Add New Substance
         </button>
       )}
@@ -114,10 +111,7 @@ export default function SubstanceManager() {
             </div>
 
             <div className="flex gap-2">
-              <button
-                type="submit"
-                className="btn-primary flex-1"
-              >
+              <button type="submit" className="btn-primary flex-1">
                 Add
               </button>
               <button
@@ -145,14 +139,13 @@ export default function SubstanceManager() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {substances.map(substance => {
+          {substances.map((substance) => {
             const substanceEntries = getEntriesBySubstance(substance.id);
             const remaining = getSubstanceRemaining(substance, entries);
             const usageRate = getUsageRate(substance, entries);
             const depletion = getProjectedDepletion(substance, entries);
-            const percentRemaining = remaining > 0
-              ? (remaining / substance.theoreticalInitialMass * 100).toFixed(1)
-              : 0;
+            const percentRemaining =
+              remaining > 0 ? ((remaining / substance.theoreticalInitialMass) * 100).toFixed(1) : 0;
 
             return (
               <div key={substance.id} className="card">
@@ -174,7 +167,9 @@ export default function SubstanceManager() {
                   </div>
                   <div className="flex justify-between text-slate-300">
                     <span>Remaining:</span>
-                    <span className={`font-mono font-bold ${remaining > 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                    <span
+                      className={`font-mono font-bold ${remaining > 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                    >
                       {remaining}g
                     </span>
                   </div>
@@ -190,9 +185,7 @@ export default function SubstanceManager() {
                   </div>
                   <div className="flex justify-between text-slate-300">
                     <span>Usage Rate:</span>
-                    <span className="font-mono">
-                      {usageRate > 0 ? `${usageRate}g/day` : 'N/A'}
-                    </span>
+                    <span className="font-mono">{usageRate > 0 ? `${usageRate}g/day` : 'N/A'}</span>
                   </div>
                   {depletion.depleted && (
                     <div className="flex justify-between text-red-400">
@@ -211,9 +204,7 @@ export default function SubstanceManager() {
                   {!depletion.depleted && depletion.date && (
                     <div className="flex justify-between text-slate-400 text-xs">
                       <span>Depletion Date:</span>
-                      <span className="font-mono">
-                        {depletion.date.toLocaleDateString()}
-                      </span>
+                      <span className="font-mono">{depletion.date.toLocaleDateString()}</span>
                     </div>
                   )}
                 </div>
@@ -225,12 +216,14 @@ export default function SubstanceManager() {
                       {remaining > 0 ? 'Remaining' : 'Overconsumption'}
                     </span>
                     <span className="text-xs font-mono text-slate-300">
-                      {remaining > 0 ? `${percentRemaining}%` : `${Math.abs(percentRemaining)}% over`}
+                      {remaining > 0
+                        ? `${percentRemaining}%`
+                        : `${Math.abs(percentRemaining)}% over`}
                     </span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full transition-all ${remaining > 0 ? 'bg-blue-600' : 'bg-red-600'}`}
+                      className={`h-2 rounded-full transition-all ${remaining > 0 ? 'bg-emerald-700' : 'bg-red-600'}`}
                       style={{ width: `${Math.min(Math.abs(percentRemaining), 100)}%` }}
                     />
                   </div>

@@ -2,20 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Force dark theme */
+/* Earth-green dark theme custom properties */
 :root {
   color-scheme: dark;
+
+  /* Backgrounds */
+  --bg-primary: #0F0F0F;
+  --bg-secondary: #1A1A1A;
+  --bg-tertiary: #242424;
+
+  /* Earth green accents */
+  --accent: #2E6F40;
+  --accent-hover: #358D47;
+  --accent-active: #1F4A2A;
+  --accent-muted: rgba(46, 111, 64, 0.5);
+
+  /* Text */
+  --text-primary: #E8E8E8;
+  --text-secondary: #A8A8A8;
+  --text-muted: #6B6B6B;
+
+  /* Borders */
+  --border: #303030;
+  --border-focus: #2E6F40;
+
+  /* Status colors */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
 }
 
 html, body, #root {
-  @apply bg-slate-950 text-slate-50;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100%;
   min-height: 100vh;
 }
 
-/* Base styles */
+/* Base element styles */
 button {
-  @apply transition-colors duration-150;
+  @apply transition-colors duration-200;
 }
 
 button:disabled {
@@ -23,30 +50,139 @@ button:disabled {
 }
 
 input, textarea, select {
-  @apply transition-colors duration-150;
+  @apply transition-colors duration-200;
 }
 
-/* Utility classes */
+/* Card styles */
 .card {
-  @apply bg-slate-900 rounded-lg p-4 border border-slate-800;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  @apply rounded-xl p-5;
 }
 
+/* Button styles - Mobile-optimized touch targets */
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg disabled:opacity-50;
+  background-color: var(--accent);
+  @apply text-white font-medium py-3.5 px-5 rounded-xl;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: var(--accent-active);
 }
 
 .btn-secondary {
-  @apply bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  @apply font-medium py-3.5 px-5 rounded-xl;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #303030;
 }
 
 .btn-danger {
-  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg;
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-3.5 px-5 rounded-xl;
 }
 
+/* Input styles - Mobile-optimized touch targets */
 .input-base {
-  @apply bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  @apply rounded-xl px-4 py-3.5 placeholder-slate-500;
+}
+
+.input-base:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(46, 111, 64, 0.15);
 }
 
 .label-base {
-  @apply block text-sm font-medium text-slate-300 mb-2;
+  color: var(--text-secondary);
+  @apply block text-xs font-semibold mb-2 uppercase tracking-wide;
+}
+
+/* Swipe navigation styles */
+.swipe-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.swipe-page {
+  flex-shrink: 0;
+  width: 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/* Hide scrollbar for swipe container */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Background utilities */
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.bg-tertiary {
+  background-color: var(--bg-tertiary);
+}
+
+/* Text utilities */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Border utilities */
+.border-border {
+  border-color: var(--border);
+}
+
+/* Gradient overlays */
+.gradient-fade-bottom {
+  background: linear-gradient(to top, var(--bg-primary) 0%, transparent 100%);
+}
+
+/* Focus ring for accessibility */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(46, 111, 64, 0.4);
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Safe area padding for iPhone notch */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
 }

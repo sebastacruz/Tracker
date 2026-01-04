@@ -1069,3 +1069,147 @@ jobs:
 **Next Phase Ready**: The application now has enterprise-grade infrastructure supporting confident, rapid feature development for Phase 6 and beyond.
 
 ---
+
+## Phase 6: UI Modernization & Swipe Navigation ✅
+
+### January 4, 2026 - Complete UI Overhaul
+
+**Status**: ✅ COMPLETE
+**Goal**: Modern, minimal UI with iOS-style swipe navigation and earth-green color scheme
+
+---
+
+### Overview
+
+Three-pronged effort to modernize the Tracker app:
+1. **Cleanup**: Remove seed data (user has backups)
+2. **Swipe Navigation**: iOS-style horizontal swipe between pages
+3. **UI Redesign**: Modern minimal black/earth-green theme
+
+**Target**: iPhone 14 Pro Safari via Playwright testing
+**Testing**: Playwright e2e tests with visual regression
+
+---
+
+### Architecture Decisions
+
+- **Navigation**: Minimal navbar with settings gear, swipe as primary
+- **Swipe Flow**: Entry → Dashboard → History → Flavors (4 pages)
+- **Settings**: Accessed via gear icon (not in swipe flow)
+- **Colors**: Earth-green (#2E6F40) on true black (#0F0F0F)
+- **Page Indicators**: Clean minimal dots (iOS-style)
+
+---
+
+### Implementation Summary
+
+#### Phase 6.1: Seed Data Removal ✅
+- Deleted `src/utils/seedData.js`
+- Removed import and `initializeSeedData()` from App.jsx
+- Build verified successful
+
+#### Phase 6.2: Playwright Setup ✅
+- Installed `@playwright/test` and WebKit browser
+- Created `playwright.config.js` for iPhone 14 Pro Safari
+- Created test suites:
+  - `tests/e2e/app.spec.js` (3 app loading tests)
+  - `tests/e2e/visual.spec.js` (5 visual design tests)
+- All 8 e2e tests passing
+
+#### Phase 6.3: Swipe Navigation ✅
+- Created `SwipeContainer.jsx` with CSS scroll-snap
+- Created `PageIndicator.jsx` with minimal dot indicators
+- Updated `App.jsx` to use SwipeContainer wrapper
+- Updated `Navbar.jsx` to minimal design (logo + settings gear)
+- Native iOS-like swipe feel with hardware acceleration
+
+#### Phase 6.4: UI Redesign ✅
+**Color Palette (Earth-Green Dark Theme)**:
+```css
+--bg-primary: #0F0F0F;      /* True black, OLED-optimized */
+--bg-secondary: #1A1A1A;    /* Card backgrounds */
+--bg-tertiary: #242424;     /* Inputs, elevated surfaces */
+--accent: #2E6F40;          /* Forest green primary */
+--accent-hover: #358D47;    /* Hover state */
+--text-primary: #E8E8E8;    /* Off-white */
+--text-secondary: #A8A8A8;  /* Muted gray */
+--border: #303030;          /* Subtle borders */
+```
+
+**Design Improvements (Iteration 2)**:
+- Page indicators simplified to dots only (removed labels)
+- Labels changed to uppercase with letter-spacing
+- Touch targets increased (py-3.5 on buttons/inputs)
+- Rounded corners increased (rounded-xl)
+- Navbar spacing improved with larger icons
+- Cards use rounded-xl with more padding
+
+**Components Updated**:
+- `globals.css` - New color variables and touch-friendly sizing
+- `tailwind.config.js` - Earth-green palette
+- `Navbar.jsx` - Minimal design
+- `QuickEntry.jsx` - Theme colors
+- `Dashboard.jsx` - Chart colors coordinated
+- `History.jsx` - Theme colors
+- `SubstanceManager.jsx` - Theme colors
+- `Settings.jsx` - Theme colors
+
+---
+
+### Files Changed
+
+**Deleted**:
+- `src/utils/seedData.js`
+
+**Created**:
+- `playwright.config.js`
+- `tests/e2e/app.spec.js`
+- `tests/e2e/visual.spec.js`
+- `src/components/SwipeContainer.jsx`
+- `src/components/PageIndicator.jsx`
+
+**Modified**:
+- `package.json` (added @playwright/test)
+- `src/App.jsx` (removed seed, added swipe navigation)
+- `src/components/Navbar.jsx` (minimal redesign)
+- `src/styles/globals.css` (earth-green theme)
+- `tailwind.config.js` (color palette)
+- `src/components/QuickEntry.jsx` (theme)
+- `src/components/Dashboard.jsx` (chart colors)
+- `src/components/History.jsx` (theme)
+- `src/components/SubstanceManager.jsx` (theme)
+- `src/components/Settings.jsx` (theme)
+
+---
+
+### Test Results
+
+**Playwright E2E Tests**: 8/8 passing
+- App loading tests: 3 passing
+- Visual design tests: 5 passing
+
+**Screenshots Captured**:
+- `test-results/screenshots/quick-entry.png`
+- `test-results/screenshots/navbar.png`
+- `test-results/screenshots/page-indicators.png`
+- `test-results/screenshots/settings.png`
+
+---
+
+### Design Review Notes
+
+**What Works Well**:
+- Color palette is cohesive and OLED-optimized
+- Page indicators are clean and minimal
+- Touch targets are appropriately sized for mobile
+- Dark theme is consistent throughout
+- Swipe navigation feels native on iOS
+
+**Iteration 2 Improvements Applied**:
+1. ✅ Simplified page indicators to dots only
+2. ✅ Increased touch target sizes (py-3.5)
+3. ✅ Improved navbar spacing and icon size
+4. ✅ Refined typography (uppercase labels)
+5. ✅ Larger border radius (rounded-xl)
+
+---

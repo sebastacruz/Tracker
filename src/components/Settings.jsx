@@ -45,8 +45,8 @@ export default function Settings() {
 
       {/* Success Message */}
       {exportSuccess && (
-        <div className="mb-4 p-4 bg-green-900 border border-green-700 rounded-lg text-green-100">
-          ✅ {exportSuccess}
+        <div className="mb-4 p-4 bg-emerald-950/50 border border-emerald-700 rounded-lg text-emerald-200">
+          {exportSuccess}
         </div>
       )}
 
@@ -64,13 +64,11 @@ export default function Settings() {
               <div>
                 <h4 className="font-semibold mb-1">Export as JSON</h4>
                 <p className="text-sm text-slate-400">
-                  Complete data backup including all substances and entries. Use this to import data elsewhere or keep as backup.
+                  Complete data backup including all substances and entries. Use this to import data
+                  elsewhere or keep as backup.
                 </p>
               </div>
-              <button
-                onClick={handleExportJSON}
-                className="btn-primary whitespace-nowrap"
-              >
+              <button onClick={handleExportJSON} className="btn-primary whitespace-nowrap">
                 Download JSON
               </button>
             </div>
@@ -82,13 +80,11 @@ export default function Settings() {
               <div>
                 <h4 className="font-semibold mb-1">Export as CSV</h4>
                 <p className="text-sm text-slate-400">
-                  Entries in spreadsheet format. Perfect for analysis in Excel, Google Sheets, or your analytics tools.
+                  Entries in spreadsheet format. Perfect for analysis in Excel, Google Sheets, or
+                  your analytics tools.
                 </p>
               </div>
-              <button
-                onClick={handleExportCSV}
-                className="btn-primary whitespace-nowrap"
-              >
+              <button onClick={handleExportCSV} className="btn-primary whitespace-nowrap">
                 Download CSV
               </button>
             </div>
@@ -101,9 +97,7 @@ export default function Settings() {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 bg-slate-900 rounded-lg">
               <p className="text-slate-400 text-sm">Active Substances</p>
-              <p className="text-2xl font-bold">
-                {substances.filter(s => s.active).length}
-              </p>
+              <p className="text-2xl font-bold">{substances.filter((s) => s.active).length}</p>
             </div>
             <div className="p-3 bg-slate-900 rounded-lg">
               <p className="text-slate-400 text-sm">Total Entries</p>
@@ -117,9 +111,7 @@ export default function Settings() {
             </div>
             <div className="p-3 bg-slate-900 rounded-lg">
               <p className="text-slate-400 text-sm">People Tracked</p>
-              <p className="text-2xl font-bold">
-                {new Set(entries.map(e => e.person)).size}
-              </p>
+              <p className="text-2xl font-bold">{new Set(entries.map((e) => e.person)).size}</p>
             </div>
           </div>
         </div>
@@ -127,9 +119,10 @@ export default function Settings() {
 
       {/* iCloud Setup Guide */}
       <div className="card mb-6">
-        <h3 className="text-lg font-bold mb-4">💾 Sync to iCloud (Optional)</h3>
+        <h3 className="text-lg font-bold mb-4">Sync to iCloud (Optional)</h3>
         <p className="text-slate-400 text-sm mb-4">
-          Keep your exported JSON file in your iCloud Files folder so you can access it from your Mac for analytics and backup.
+          Keep your exported JSON file in your iCloud Files folder so you can access it from your
+          Mac for analytics and backup.
         </p>
 
         <div className="space-y-3 text-sm text-slate-300">
@@ -143,8 +136,9 @@ export default function Settings() {
           </ol>
         </div>
 
-        <div className="mt-4 p-3 bg-blue-900 border border-blue-700 rounded-lg text-blue-100 text-sm">
-          💡 The exported JSON stays in sync with your latest entries once you export it. Re-export periodically to update the file.
+        <div className="mt-4 p-3 bg-emerald-950/50 border border-emerald-700 rounded-lg text-emerald-200 text-sm">
+          The exported JSON stays in sync with your latest entries once you export it. Re-export
+          periodically to update the file.
         </div>
       </div>
 
@@ -155,55 +149,58 @@ export default function Settings() {
           Manage your app data. Be careful with destructive actions!
         </p>
 
-        <button
-          onClick={handleClearData}
-          className="btn-danger w-full"
-        >
-          🗑️ Clear All Data
+        <button onClick={handleClearData} className="btn-danger w-full">
+          Clear All Data
         </button>
 
         <p className="text-xs text-red-400 mt-3">
-          ⚠️ Warning: This will permanently delete all substances and entries. Make sure you&apos;ve exported your data first!
+          ⚠️ Warning: This will permanently delete all substances and entries. Make sure you&apos;ve
+          exported your data first!
         </p>
       </div>
 
       {/* FAQ */}
       <div className="mt-8 card">
-        <h3 className="text-lg font-bold mb-4">❓ Frequently Asked Questions</h3>
+        <h3 className="text-lg font-bold mb-4">Frequently Asked Questions</h3>
 
         <div className="space-y-4 text-sm text-slate-300">
           <div>
             <h4 className="font-semibold mb-2">Where does my data live?</h4>
             <p className="text-slate-400">
-              Data is stored in your browser&apos;s localStorage on your phone. When you export, it creates a file that you control.
+              Data is stored in your browser&apos;s localStorage on your phone. When you export, it
+              creates a file that you control.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">How do I back up my data?</h4>
             <p className="text-slate-400">
-              Click &ldquo;Download JSON&rdquo; to save your complete data. Store it safely, or upload it to iCloud Drive.
+              Click &ldquo;Download JSON&rdquo; to save your complete data. Store it safely, or
+              upload it to iCloud Drive.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">Can I analyze my data externally?</h4>
             <p className="text-slate-400">
-              Yes! Export as CSV for spreadsheets, or as JSON for programmatic analysis with Python, R, etc.
+              Yes! Export as CSV for spreadsheets, or as JSON for programmatic analysis with Python,
+              R, etc.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">What if I lose my phone?</h4>
             <p className="text-slate-400">
-              Your exported JSON files in iCloud Drive persist. Reinstall the app and re-import your data.
+              Your exported JSON files in iCloud Drive persist. Reinstall the app and re-import your
+              data.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">How often should I export?</h4>
             <p className="text-slate-400">
-              Export after each week of tracking, or whenever you want a backup. It only takes seconds.
+              Export after each week of tracking, or whenever you want a backup. It only takes
+              seconds.
             </p>
           </div>
         </div>

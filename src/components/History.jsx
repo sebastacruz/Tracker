@@ -19,14 +19,14 @@ export default function History({ substances }) {
   // Filter entries
   let filtered = entries;
   if (selectedSubstance) {
-    filtered = filtered.filter(e => e.substanceId === selectedSubstance);
+    filtered = filtered.filter((e) => e.substanceId === selectedSubstance);
   }
   if (selectedPerson) {
-    filtered = filtered.filter(e => e.person === selectedPerson);
+    filtered = filtered.filter((e) => e.person === selectedPerson);
   }
 
   // Get unique people
-  const uniquePeople = [...new Set(entries.map(e => e.person))].sort();
+  const uniquePeople = [...new Set(entries.map((e) => e.person))].sort();
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6">
@@ -46,7 +46,7 @@ export default function History({ substances }) {
             className="input-base w-full"
           >
             <option value="">All flavors</option>
-            {substances.map(s => (
+            {substances.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
@@ -62,7 +62,7 @@ export default function History({ substances }) {
             className="input-base w-full"
           >
             <option value="">All people</option>
-            {uniquePeople.map(person => (
+            {uniquePeople.map((person) => (
               <option key={person} value={person}>
                 {person}
               </option>
@@ -101,7 +101,7 @@ export default function History({ substances }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(entry => {
+              {filtered.map((entry) => {
                 const substance = substanceLookup[entry.substanceId];
                 const time = formatTimestamp(entry.timestamp);
                 return (
@@ -116,9 +116,13 @@ export default function History({ substances }) {
                       </td>
                       <td className="py-3 px-4 font-medium">{substance?.name || 'Unknown'}</td>
                       <td className="py-3 px-4">{entry.person}</td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-300">{entry.initialMass}</td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-300">{entry.finalMass}</td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-blue-400">
+                      <td className="py-3 px-4 text-right font-mono text-slate-300">
+                        {entry.initialMass}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono text-slate-300">
+                        {entry.finalMass}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-400">
                         {entry.delta}
                       </td>
                       <td className="py-3 px-4 text-center">
@@ -131,7 +135,10 @@ export default function History({ substances }) {
                       </td>
                     </tr>
                     {entry.notes && (
-                      <tr key={`${entry.id}-notes`} className="border-b border-slate-800 bg-slate-900/30">
+                      <tr
+                        key={`${entry.id}-notes`}
+                        className="border-b border-slate-800 bg-slate-900/30"
+                      >
                         <td colSpan="7" className="py-2 px-4 text-xs text-slate-400 italic">
                           <span className="text-slate-500">Note:</span> {entry.notes}
                         </td>
@@ -168,9 +175,7 @@ export default function History({ substances }) {
             </div>
             <div>
               <p className="text-slate-400 text-sm">People Involved</p>
-              <p className="text-2xl font-bold">
-                {new Set(filtered.map(e => e.person)).size}
-              </p>
+              <p className="text-2xl font-bold">{new Set(filtered.map((e) => e.person)).size}</p>
             </div>
           </div>
         </div>

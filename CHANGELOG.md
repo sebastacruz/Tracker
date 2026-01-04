@@ -15,6 +15,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mobile native app (iOS/Android)
 - Advanced analytics and predictions
 - Customizable themes
+- Component-level tests for UI coverage
+
+---
+
+## [1.1.0] - 2026-01-03
+
+### Added - Testing Infrastructure
+- **Comprehensive Test Suite**: 104 total tests (61 unit + 27 integration + 16 performance)
+  - Unit tests for calculations.js (61 tests, 100% coverage)
+  - Integration tests for custom hooks (27 tests, 100% function coverage)
+  - Performance tests for scalability validation (16 tests)
+- **Vitest Configuration**: Modern test framework with coverage reporting
+- **Test Utilities**: Setup file with mocks for localStorage, window.confirm, URL APIs
+- **Performance Baseline**: Large dataset fixture (200 entries, 20 substances) for testing
+
+### Added - CI/CD & Quality Gates
+- **GitHub Actions CI Pipeline**: Automated testing on every PR and push
+  - Runs linting, tests, and build verification
+  - Blocks merge if any step fails
+- **Pre-commit Hooks**: Husky + lint-staged integration
+  - Auto-formats code with Prettier
+  - Runs ESLint with auto-fix
+  - Prevents bad commits from entering repository
+- **Bundle Size Monitoring**: Rollup plugin visualizer tracking bundle growth
+  - Generates visual analysis report (docs/bundle-analysis.html)
+  - Tracks Gzip and Brotli compression sizes
+
+### Added - Error Handling & Validation
+- **Error Boundary Component**: Graceful error handling for React crashes
+  - User-friendly fallback UI with recovery options
+  - Debug info toggle for development
+  - "Try Again", "Go Home", and "Clear Data" recovery buttons
+- **Enhanced Input Validation**: Improved data entry safety
+  - Prevents negative mass values with real-time feedback
+  - XSS prevention with input sanitization
+  - Visual validation feedback (red borders, warning icons)
+  - Submit button disabled until form is valid
+
+### Added - Documentation
+- **Security Review Report**: Comprehensive security analysis (docs/security-review.md)
+  - Dependency vulnerability audit
+  - XSS pattern analysis across all components
+  - localStorage security validation
+  - OWASP Top 10 compliance mapping
+- **Code Quality Report**: Detailed quality metrics (docs/code-quality-review.md)
+  - Cyclomatic complexity analysis (71+ functions analyzed)
+  - Component size analysis
+  - ESLint violation categorization
+  - Refactoring priorities and baseline metrics
+- **Performance Baseline Report**: Scalability validation (docs/performance-baseline.md)
+  - Performance metrics with 20 substances and 200+ entries
+  - Mobile performance testing results
+  - Bottleneck analysis and optimization recommendations
+
+### Changed
+- **QuickEntry Component**: Enhanced with real-time validation feedback
+- **Test Scripts**: Added `test`, `test:ui`, and `test:coverage` npm scripts
+- **Development Workflow**: Pre-commit hooks enforce code quality standards
+
+### Security
+- **Zero High/Critical Vulnerabilities**: Comprehensive security review completed
+- **XSS Prevention**: Input sanitization implemented across data entry points
+- **Dependency Audit**: All packages up-to-date, 2 moderate issues patched
+
+### Performance
+- **Exceptional Scalability**: All operations 100-1000x faster than targets
+  - Load 20 substances: 0.12ms
+  - Filter 200 entries: 0.10ms
+  - Sort 200 entries: 0.45ms
+  - Aggregate statistics: 0.23ms
+- **Storage Efficiency**: 31.79 KB for large dataset (3.2% of 1MB limit)
+- **Mobile Optimized**: Smooth rendering with no UI jank
+
+### Developer Experience
+- **Test Coverage**: 100% on critical paths (calculations + hooks)
+- **Fast Tests**: Full test suite runs in <1 second
+- **Automated Quality**: CI/CD prevents regressions
+- **Code Quality**: A grade (85/100) with minimal technical debt
 
 ---
 
@@ -72,6 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 1.1.0 | 2026-01-03 | Testing infrastructure, CI/CD, and quality gates |
 | 1.0.0 | 2026-01-03 | First production release with full features |
 | 0.1.0 | 2026-01-02 | Initial project setup and scaffolding |
 

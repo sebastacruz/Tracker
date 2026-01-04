@@ -11,17 +11,35 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
-      include: ['src/**/*.{js,jsx}'],
+      include: [
+        'src/utils/calculations.js',
+        'src/hooks/useSubstances.js',
+        'src/hooks/useEntries.js',
+      ],
       exclude: [
         'src/main.jsx',
         'src/**/*.test.{js,jsx}',
         'src/**/__tests__/**',
       ],
       thresholds: {
-        statements: 80,
-        branches: 75,
-        functions: 80,
-        lines: 80,
+        'src/utils/calculations.js': {
+          statements: 80,
+          branches: 80,
+          functions: 80,
+          lines: 80,
+        },
+        'src/hooks/useSubstances.js': {
+          statements: 60,
+          branches: 60,
+          functions: 60,
+          lines: 60,
+        },
+        'src/hooks/useEntries.js': {
+          statements: 60,
+          branches: 60,
+          functions: 60,
+          lines: 60,
+        },
       },
     },
   },

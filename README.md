@@ -1,6 +1,6 @@
 # Substance Usage Tracker
 
-> Version 1.0.0 | [Live App](https://sebastacruz.github.io/Tracker/) | [Changelog](CHANGELOG.md)
+> Version 1.1.0 | [Live App](https://sebastacruz.github.io/Tracker/) | [Changelog](CHANGELOG.md)
 
 A simple, privacy-first web app to track substance consumption using mass measurements. Built for iPhone Safari with localStorage persistence and manual iCloud backup.
 
@@ -98,9 +98,11 @@ src/
 - **Build Tool**: Vite 5.0.8
 - **Styling**: Tailwind CSS 3.4.1 (dark theme)
 - **Charts**: Recharts 2.10.3
+- **Testing**: Vitest + React Testing Library
 - **Runtime**: Node.js v20.19.6 (via NVM)
 - **Deployment**: GitHub Pages
-- **Code Quality**: ESLint, Prettier
+- **Code Quality**: ESLint, Prettier, Pre-commit Hooks
+- **CI/CD**: GitHub Actions
 
 ## 💻 Development
 
@@ -122,6 +124,9 @@ nvm use 20.19.6
 | `npm run build` | Build production bundle → `docs/` folder |
 | `npm run preview` | Preview production build locally |
 | `npm run lint` | Run ESLint code checks |
+| `npm test` | Run test suite with Vitest |
+| `npm run test:ui` | Open interactive test UI |
+| `npm run test:coverage` | Generate coverage report |
 
 ### Deploying to GitHub Pages
 
@@ -132,12 +137,46 @@ git commit -m "Build production bundle"
 git push origin main   # GitHub Pages auto-deploys from docs/
 ```
 
+### Testing
+
+The project includes comprehensive test coverage:
+
+```bash
+# Run all tests
+npm test
+
+# Watch mode (auto-reruns on file changes)
+npm test -- --watch
+
+# Coverage report
+npm run test:coverage
+
+# Interactive UI
+npm run test:ui
+```
+
+**Test Coverage**:
+- ✅ **104 total tests** (100% passing)
+- ✅ **100% coverage** on calculations.js (61 unit tests)
+- ✅ **100% function coverage** on hooks (27 integration tests)
+- ✅ **Performance tests** with 200+ entries (16 tests)
+- ✅ Test execution: <1 second
+
+**What's Tested**:
+- Pure calculation functions (delta, remaining mass, statistics)
+- Custom hooks (useSubstances, useEntries)
+- localStorage persistence
+- State management and CRUD operations
+- Edge cases (zero, negative, large numbers)
+- Performance validation with realistic datasets
+
 ### Code Conventions
 
 - **Language**: JavaScript (ES6+) with JSX
 - **Style Guide**: Prettier (auto-format on save)
 - **Linting**: ESLint with React plugin
 - **Components**: Functional components with hooks
+- **Pre-commit Hooks**: Auto-format and lint before commits
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines.
 

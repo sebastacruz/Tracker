@@ -176,11 +176,11 @@ export default function Dashboard({ substances }) {
       </div>
 
       {/* Flavor Selector - Multi-select */}
-      <div ref={menuRef} className="card mb-6 max-w-md">
+      <div ref={menuRef} className="card mb-6 max-w-md relative">
         <label className="label-base">Select Flavors</label>
         <button
           onClick={() => setShowMenu(!showMenu)}
-          className="input-base w-full text-left flex justify-between items-center"
+          className="input-base w-full text-left flex justify-between items-center cursor-pointer"
         >
           <span className="truncate">
             {selectedSubstances.length === 0
@@ -193,24 +193,23 @@ export default function Dashboard({ substances }) {
         </button>
 
         {showMenu && (
-          <div className="absolute mt-1 w-full max-w-md bg-slate-800 border border-slate-700 rounded-lg z-50 max-h-64 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-secondary border border-slate-700 rounded-xl z-50 max-h-64 overflow-y-auto shadow-xl">
             {substances
               .filter((s) => s.active)
+              .sort((a, b) => a.name.localeCompare(b.name))
               .map((substance) => (
-                <button
+                <label
                   key={substance.id}
-                  type="button"
-                  onClick={() => toggleSubstance(substance.id)}
-                  className="w-full text-left px-3 py-2 hover:bg-slate-700 transition-colors flex items-center gap-2 text-slate-300"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-tertiary cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={selectedSubstances.includes(substance.id)}
-                    onChange={() => {}}
-                    className="w-4 h-4 cursor-pointer"
+                    onChange={() => toggleSubstance(substance.id)}
+                    className="w-4 h-4 accent-emerald-600 cursor-pointer"
                   />
-                  {substance.name}
-                </button>
+                  <span className="text-sm">{substance.name}</span>
+                </label>
               ))}
           </div>
         )}
@@ -288,10 +287,10 @@ export default function Dashboard({ substances }) {
         )}
       </div>
 
-      {/* All Substances Overview */}
+      {/* All Flavors Overview */}
       {allSubstancesData.length > 0 && (
         <div className="card">
-          <h3 className="text-lg font-bold mb-4">All Substances Overview</h3>
+          <h3 className="text-lg font-bold mb-4">All Flavors Overview</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={allSubstancesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />

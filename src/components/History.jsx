@@ -92,7 +92,7 @@ export default function History({ substances }) {
             <thead>
               <tr className="border-b border-slate-700">
                 <th className="text-left py-3 px-4 font-semibold text-slate-300">Date/Time</th>
-                <th className="text-left py-3 px-4 font-semibold text-slate-300">Substance</th>
+                <th className="text-left py-3 px-4 font-semibold text-slate-300">Flavor</th>
                 <th className="text-left py-3 px-4 font-semibold text-slate-300">Person</th>
                 <th className="text-right py-3 px-4 font-semibold text-slate-300">Initial (g)</th>
                 <th className="text-right py-3 px-4 font-semibold text-slate-300">Final (g)</th>

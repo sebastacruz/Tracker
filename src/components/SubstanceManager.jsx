@@ -28,7 +28,7 @@ export default function SubstanceManager() {
     setSuccess('');
 
     if (!name.trim()) {
-      setError('Please enter a substance name');
+      setError('Please enter a flavor name');
       return;
     }
 
@@ -42,10 +42,10 @@ export default function SubstanceManager() {
       setName('');
       setTheoreticalMass('');
       setShowForm(false);
-      setSuccess('Substance added!');
+      setSuccess('Flavor added!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(err.message || 'Error adding substance');
+      setError(err.message || 'Error adding flavor');
     }
   };
 
@@ -53,8 +53,7 @@ export default function SubstanceManager() {
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Substances</h2>
-        <p className="text-slate-400">Manage tracked substances</p>
+        <h2 className="text-3xl font-bold mb-2">Flavors</h2>
       </div>
 
       {/* Success Message */}
@@ -71,17 +70,17 @@ export default function SubstanceManager() {
         </div>
       )}
 
-      {/* Add Substance Button */}
+      {/* Add Flavor Button */}
       {!showForm && (
         <button onClick={() => setShowForm(true)} className="btn-primary mb-6">
-          + Add New Substance
+          + Add New Flavor
         </button>
       )}
 
-      {/* Add Substance Form */}
+      {/* Add Flavor Form */}
       {showForm && (
         <div className="card mb-6 max-w-md">
-          <h3 className="text-lg font-bold mb-4">Add New Substance</h3>
+          <h3 className="text-lg font-bold mb-4">Add New Flavor</h3>
           <form onSubmit={handleAddSubstance} className="space-y-4">
             <div>
               <label className="label-base">Name</label>
@@ -131,11 +130,11 @@ export default function SubstanceManager() {
         </div>
       )}
 
-      {/* Substances List */}
+      {/* Flavors List */}
       {substances.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-slate-400 text-lg">No substances yet</p>
-          <p className="text-slate-500 text-sm mt-2">Add your first substance to get started</p>
+          <p className="text-slate-400 text-lg">No flavors yet</p>
+          <p className="text-slate-500 text-sm mt-2">Add your first flavor to get started</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">

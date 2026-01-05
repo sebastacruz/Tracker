@@ -1,18 +1,27 @@
-# Substance Usage Tracker
+# Dabta - Dab Usage Tracker
 
-> Version 1.1.0 | [Live App](https://sebastacruz.github.io/Tracker/) | [Changelog](CHANGELOG.md)
+> Version 1.2.0 | [Live App](https://sebastacruz.github.io/Tracker/) | [Changelog](CHANGELOG.md)
 
-A simple, privacy-first web app to track substance consumption using mass measurements. Built for iPhone Safari with localStorage persistence and manual iCloud backup.
+A simple, privacy-first web app to track cannabis concentrate usage using mass measurements. Built for iPhone Safari with one-tap dab recording, swipe navigation, and manual iCloud backup.
 
-## ✨ Features
+## ✨ What's New in v1.2.0
 
-- 📊 **Track Multiple Substances** - Apollo, Gramlin, or any custom substance
-- ⚖️ **Mass-Based Tracking** - Input initial & final mass; auto-calculates usage delta
+- 🎨 **Rebranded to "Dabta"** - New identity with earth-green design system
+- ⚡ **One-Tap Recording** - Preset dab sizes (Small/Regular/Large) for instant entry
+- 👆 **Swipe Navigation** - Natural iOS-style page swiping between views
+- 🎯 **Terminology Update** - "Flavors" instead of "Substances" for better UX
+- 🎭 **Manrope Typography** - Professional, readable font across entire app
+- ♿ **Accessibility Improvements** - ARIA labels, live regions, enhanced focus states
+
+## ✨ Core Features
+
+- 📊 **Track Multiple Flavors** - Manage unlimited concentrates (Apollo, Gramlin, custom)
+- 🎯 **Quick Dab Entry** - Select flavor + person once, tap size button to record
 - 📈 **Visual Analytics** - Interactive charts showing remaining mass and usage trends
-- 📱 **Mobile-First** - Optimized for iPhone Safari, installable as a web app
+- 📱 **Mobile-First** - Optimized for iPhone Safari with 112×76px touch targets
 - ☁️ **Manual Sync** - Export JSON files to iCloud Drive for backup
 - 📥 **Export Options** - Download data as CSV or JSON for external analysis
-- 🌙 **Dark Theme** - Battery-efficient dark mode designed for evening use
+- 🌙 **Earth-Green Dark Theme** - Battery-efficient OLED-optimized design
 - 🔒 **Privacy-First** - All data stays on your device; no backend or tracking
 
 ## 🚀 Quick Start
@@ -25,9 +34,10 @@ A simple, privacy-first web app to track substance consumption using mass measur
    - Tap Share → "Add to Home Screen"
    - Opens like a native app!
 3. **Start tracking**:
-   - Select substance and person
-   - Enter initial and final mass
-   - View analytics on the Dashboard
+   - Tap a flavor (or add your own in Flavors page)
+   - Select a person
+   - Tap dab size: Small (0.03g), Regular (0.04g), or Large (0.05g)
+   - Swipe left to view analytics on Dashboard
 
 ### For Developers
 
@@ -96,9 +106,10 @@ src/
 
 - **Framework**: React 18.2.0
 - **Build Tool**: Vite 5.0.8
-- **Styling**: Tailwind CSS 3.4.1 (dark theme)
+- **Styling**: Tailwind CSS 3.4.1 (earth-green dark theme)
+- **Typography**: Manrope font family (Google Fonts)
 - **Charts**: Recharts 2.10.3
-- **Testing**: Vitest + React Testing Library
+- **Testing**: Vitest + React Testing Library + Playwright
 - **Runtime**: Node.js v20.19.6 (via NVM)
 - **Deployment**: GitHub Pages
 - **Code Quality**: ESLint, Prettier, Pre-commit Hooks

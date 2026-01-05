@@ -4,7 +4,7 @@
  */
 import PropTypes from 'prop-types';
 
-export default function Navbar({ currentView, onSettingsToggle }) {
+export default function Navbar({ currentView, onViewChange, onSettingsToggle }) {
   const isSettings = currentView === 'settings';
 
   return (
@@ -12,10 +12,13 @@ export default function Navbar({ currentView, onSettingsToggle }) {
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo/Title */}
-          <div className="flex items-center gap-3">
-            <span className="text-2xl opacity-70">&#9878;</span>
-            <h1 className="text-xl font-semibold text-primary tracking-tight">Tracker</h1>
-          </div>
+          <button
+            onClick={() => onViewChange('entry')}
+            className="hover:opacity-80 focus:opacity-80 focus-visible:ring-2 focus-visible:ring-emerald-400/40 focus-visible:outline-none rounded transition-all cursor-pointer"
+            aria-label="Go to Quick Entry"
+          >
+            <h1 className="text-xl font-semibold text-primary tracking-tight">Dabta</h1>
+          </button>
 
           {/* Settings Button */}
           <button
@@ -61,5 +64,6 @@ export default function Navbar({ currentView, onSettingsToggle }) {
 
 Navbar.propTypes = {
   currentView: PropTypes.string.isRequired,
+  onViewChange: PropTypes.func.isRequired,
   onSettingsToggle: PropTypes.func.isRequired,
 };

@@ -19,7 +19,7 @@ function sanitizeInput(input) {
 }
 
 export default function QuickEntry({ substances }) {
-  const { addEntry, getUniquePeople } = useEntries();
+  const { entries, addEntry, getUniquePeople } = useEntries();
   const [selectedSubstance, setSelectedSubstance] = useState('');
   const [selectedPerson, setSelectedPerson] = useState('');
   const [initialMass, setInitialMass] = useState('');
@@ -101,6 +101,40 @@ export default function QuickEntry({ substances }) {
     setNotes(sanitized);
   };
 
+  const handleDabSize = (deltaValue) => {
+    if (!selectedSubstance || !selectedPerson) return;
+
+    const substance = substances.find((s) => s.id === selectedSubstance);
+    if (!substance) return;
+
+    // Calculate current remaining mass based on theoretical initial mass and all previous entries
+    const substanceEntries = entries.filter((e) => e.substanceId === selectedSubstance);
+    const totalUsed = substanceEntries.reduce((sum, entry) => sum + (entry.delta || 0), 0);
+    const currentMass = substance.theoreticalInitialMass - totalUsed;
+
+    const initialMass = currentMass;
+    const finalMass = currentMass - deltaValue;
+
+    try {
+      addEntry(selectedSubstance, selectedPerson, initialMass, finalMass, notes || null);
+
+      // Set delta for success message display
+      setDelta(deltaValue);
+
+      // Reset notes but keep flavor and person selected for convenience
+      setNotes('');
+      setSuccess(true);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(false);
+        setDelta(null);
+      }, 3000);
+    } catch (err) {
+      setError(err.message || 'Error saving entry');
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -150,8 +184,7 @@ export default function QuickEntry({ substances }) {
     <div className="max-w-2xl mx-auto p-4 md:p-6">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Quick Entry</h2>
-        <p className="text-slate-400">Record substance usage</p>
+        <h2 className="text-3xl font-bold mb-2">Take a dab</h2>
       </div>
 
       {/* Success Message */}
@@ -248,41 +281,70 @@ export default function QuickEntry({ substances }) {
           </div>
         </div>
 
-        {/* Initial Mass */}
+        {/* Dab Size Buttons */}
         <div>
-          <label className="label-base">Initial Mass (g)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={initialMass}
-            onChange={(e) => handleMassChange(e.target.value, finalMass)}
-            placeholder="0.00"
-            className={`input-base w-full text-lg font-semibold ${
-              getMassValidation(initialMass).valid === false ? 'border-red-500' : ''
-            }`}
-            autoFocus
-          />
-          {getMassValidation(initialMass).message && (
-            <p className="text-xs text-red-400 mt-1">⚠️ {getMassValidation(initialMass).message}</p>
-          )}
-        </div>
+          <label className="label-base">
+            Dab Size <span className="text-xs text-slate-400 font-normal">(tap to record)</span>
+          </label>
 
-        {/* Final Mass */}
-        <div>
-          <label className="label-base">Final Mass (g)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={finalMass}
-            onChange={(e) => handleMassChange(initialMass, e.target.value)}
-            placeholder="0.00"
-            className={`input-base w-full text-lg font-semibold ${
-              getMassValidation(finalMass).valid === false ? 'border-red-500' : ''
-            }`}
-          />
-          {getMassValidation(finalMass).message && (
-            <p className="text-xs text-red-400 mt-1">⚠️ {getMassValidation(finalMass).message}</p>
+          {/* ARIA live region for accessibility */}
+          <div role="alert" aria-live="polite" className="sr-only">
+            {(!selectedSubstance || !selectedPerson) &&
+              'Please select a flavor and person before choosing dab size'}
+          </div>
+
+          {(!selectedSubstance || !selectedPerson) && (
+            <p className="text-xs text-amber-500 mb-2">
+              ⚠️ Please select a flavor and person first
+            </p>
           )}
+
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => handleDabSize(0.03)}
+              disabled={!selectedSubstance || !selectedPerson}
+              className={`btn-secondary py-4 flex flex-col items-center justify-center transition-transform ${
+                !selectedSubstance || !selectedPerson
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-emerald-700/20 hover:border-emerald-700 active:scale-95'
+              }`}
+              aria-label="Record small dab of 0.03 grams"
+            >
+              <span className="text-xs text-slate-400 block mb-1">Small</span>
+              <span className="text-lg font-semibold">0.03g</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDabSize(0.04)}
+              disabled={!selectedSubstance || !selectedPerson}
+              className={`btn-secondary py-4 flex flex-col items-center justify-center transition-transform ${
+                !selectedSubstance || !selectedPerson
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-emerald-700/20 hover:border-emerald-700 active:scale-95'
+              }`}
+              aria-label="Record regular dab of 0.04 grams"
+            >
+              <span className="text-xs text-slate-400 block mb-1">Regular</span>
+              <span className="text-lg font-semibold">0.04g</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDabSize(0.05)}
+              disabled={!selectedSubstance || !selectedPerson}
+              className={`btn-secondary py-4 flex flex-col items-center justify-center transition-transform ${
+                !selectedSubstance || !selectedPerson
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-emerald-700/20 hover:border-emerald-700 active:scale-95'
+              }`}
+              aria-label="Record large dab of 0.05 grams"
+            >
+              <span className="text-xs text-slate-400 block mb-1">Large</span>
+              <span className="text-lg font-semibold">0.05g</span>
+            </button>
+          </div>
         </div>
 
         {/* Notes (Optional) */}
@@ -298,44 +360,7 @@ export default function QuickEntry({ substances }) {
           />
           {notes && <p className="text-xs text-slate-400 mt-1">{notes.length}/200 characters</p>}
         </div>
-
-        {/* Delta Display */}
-        {delta !== null && (
-          <div className="p-4 bg-emerald-950/50 border border-emerald-800 rounded-lg">
-            <p className="text-slate-300 text-sm mb-1">Mass Used (Delta)</p>
-            <p className="text-3xl font-bold text-emerald-400">{delta}g</p>
-          </div>
-        )}
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={!isFormValid}
-          className={`w-full py-3 text-lg font-bold rounded-lg transition-colors ${
-            isFormValid
-              ? 'btn-primary cursor-pointer'
-              : 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50'
-          }`}
-        >
-          💾 Save Entry
-        </button>
       </form>
-
-      {/* Help Text */}
-      <div className="mt-8 p-4 bg-tertiary rounded-lg text-slate-300 text-sm">
-        <p className="font-semibold mb-2">How it works:</p>
-        <ol className="list-decimal list-inside space-y-1">
-          <li>Select or add a substance</li>
-          <li>
-            Enter the scale reading <strong>before</strong> use (Initial)
-          </li>
-          <li>
-            Enter the scale reading <strong>after</strong> use (Final)
-          </li>
-          <li>Delta is calculated automatically</li>
-          <li>Tap save to record the entry</li>
-        </ol>
-      </div>
     </div>
   );
 }

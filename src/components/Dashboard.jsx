@@ -15,6 +15,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { getSubstanceRemaining, formatTimestamp } from '../utils/calculations';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
+import PullToRefreshIndicator from './PullToRefreshIndicator';
 
 const COLORS = [
   '#2E6F40',
@@ -34,6 +36,13 @@ export default function Dashboard({ substances, entries }) {
   });
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+
+  // Pull to refresh
+  const handleRefresh = async () => {
+    window.location.reload();
+  };
+
+  const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
 
   // Update selectedSubstances when substances change
   useEffect(() => {
@@ -166,11 +175,18 @@ export default function Dashboard({ substances, entries }) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6">
+    <div ref={containerRef} className="max-w-6xl mx-auto p-4 md:p-6 relative overflow-y-auto">
+      {/* Pull to Refresh Indicator */}
+      <PullToRefreshIndicator
+        isPulling={isPulling}
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+      />
+
       {/* Header */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-        <p className="text-slate-400">Visual analytics and trends</p>
+        <p className="text-slate-400">Visual analytics and trends · Pull down to refresh</p>
       </div>
 
       {/* Flavor Selector - Multi-select */}

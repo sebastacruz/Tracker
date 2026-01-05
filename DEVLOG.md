@@ -12,6 +12,118 @@
 
 ### January 5, 2026
 
+#### Feature Enhancement: Pull-to-Refresh & Confirmation Dialog ✅
+**Goal**: Add mobile-native pull-to-refresh gesture and safety confirmation before recording dabs.
+
+**Problem Identified**:
+- User reported entries not appearing immediately after creation
+- Accidental dab recording felt too sudden without confirmation
+- Need for explicit data refresh on History and Dashboard views
+
+**Changes Made**:
+
+1. **Pull-to-Refresh Hook** (`src/hooks/usePullToRefresh.js`)
+   - Custom hook detecting pull-down gesture on mobile
+   - Touch event handling with resistance for natural feel
+   - Threshold-based trigger (80px pull distance)
+   - Visual feedback with loading spinner
+   - Works on any scrollable container
+
+2. **Pull-to-Refresh Indicator** (`src/components/PullToRefreshIndicator.jsx`)
+   - Animated spinner during refresh
+   - Arrow icon with rotation during pull
+   - Smooth opacity/transform transitions
+   - Positioned absolutely at top of container
+
+3. **Confirmation Dialog Component** (`src/components/ConfirmDialog.jsx`)
+   - Reusable modal for confirming actions
+   - Backdrop blur for focus
+   - Displays dab size and person name
+   - Clear Confirm/Cancel actions
+   - Prevents body scroll when open
+   - Accessible with proper ARIA roles
+
+4. **History Component Update** ([History.jsx:6-21,32-44](src/components/History.jsx#L6-L44))
+   - Integrated usePullToRefresh hook
+   - Added PullToRefreshIndicator visual feedback
+   - Container now scrollable with overflow-y-auto
+   - Subtitle updated: "View all recorded entries · Pull down to refresh"
+   - Refresh triggers window.location.reload() to force data sync
+
+5. **Dashboard Component Update** ([Dashboard.jsx:18-19,40-45,178-190](src/components/Dashboard.jsx#L18-L190))
+   - Integrated usePullToRefresh hook
+   - Added PullToRefreshIndicator
+   - Same refresh behavior as History
+   - Subtitle updated: "Visual analytics and trends · Pull down to refresh"
+
+6. **QuickEntry Component Update** ([QuickEntry.jsx:7,34,70-151,362-370](src/components/QuickEntry.jsx#L7-L370))
+   - Added ConfirmDialog import and state
+   - Created handleDabSizeClick() to show confirmation
+   - Created handleConfirmDab() to execute recording
+   - Created handleCancelDab() to dismiss dialog
+   - Updated all dab size buttons to call handleDabSizeClick
+   - Dialog shows: "Record a {size}g dab for {person}?"
+   - Removed unused useMemo and helper functions
+
+**Technical Implementation**:
+
+```javascript
+// Pull-to-refresh usage
+const { containerRef, isPulling, pullDistance, isRefreshing } =
+  usePullToRefresh(handleRefresh);
+
+// Confirmation dialog usage
+<ConfirmDialog
+  isOpen={confirmDialog.isOpen}
+  onConfirm={handleConfirmDab}
+  onCancel={handleCancelDab}
+  title="Confirm Entry"
+  message={`Record a ${confirmDialog.dabSize}g dab for ${selectedPerson}?`}
+/>
+```
+
+**User Experience Improvements**:
+- **Pull-to-Refresh**:
+  - Native iOS-like gesture on History and Dashboard
+  - Visual feedback with animated spinner
+  - Smooth resistance during pull
+  - Forces full page reload ensuring data consistency
+
+- **Confirmation Dialog**:
+  - Prevents accidental taps
+  - Shows exactly what will be recorded
+  - Clean modal UI with backdrop
+  - Easy to cancel or confirm
+
+**Testing**:
+- Tested on iPhone 14 Pro viewport (393×852) via Playwright
+- Pull gesture works smoothly with touch events
+- Confirmation dialog displays correctly
+- Entry creation confirmed working
+- New entry appears in History after confirmation
+- Build successful (574.39 KB bundle, 164.02 KB gzipped)
+
+**Files Created**:
+- `src/hooks/usePullToRefresh.js` (71 lines)
+- `src/components/PullToRefreshIndicator.jsx` (48 lines)
+- `src/components/ConfirmDialog.jsx` (58 lines)
+
+**Files Modified**:
+- `src/components/History.jsx` (added pull-to-refresh)
+- `src/components/Dashboard.jsx` (added pull-to-refresh)
+- `src/components/QuickEntry.jsx` (added confirmation dialog)
+- `CHANGELOG.md` (documented new features in Unreleased section)
+- `CLAUDE.md` (updated file locations with new components/hooks)
+
+**Lint Status**: 37 warnings (mostly PropTypes - acceptable for this project)
+
+**Next Steps**:
+- Monitor user feedback on confirmation dialog UX
+- Consider adding pull-to-refresh to other views if requested
+- May add settings toggle to disable confirmation if desired
+
+---
+
 #### Feature Enhancement: Total Initial Mass Field ✅
 **Goal**: Add optional "Total Initial Mass" field when creating flavors and ensure new flavors are immediately selectable.
 

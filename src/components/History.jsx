@@ -3,12 +3,22 @@
  */
 import { useState } from 'react';
 import { useEntries } from '../hooks/useEntries';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { formatTimestamp } from '../utils/calculations';
+import PullToRefreshIndicator from './PullToRefreshIndicator';
 
 export default function History({ substances, entries }) {
   const { deleteEntry } = useEntries();
   const [selectedSubstance, setSelectedSubstance] = useState('');
   const [selectedPerson, setSelectedPerson] = useState('');
+
+  // Pull to refresh
+  const handleRefresh = async () => {
+    // Force reload from localStorage
+    window.location.reload();
+  };
+
+  const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
 
   // Create lookup
   const substanceLookup = substances.reduce((acc, s) => {
@@ -29,11 +39,18 @@ export default function History({ substances, entries }) {
   const uniquePeople = [...new Set(entries.map((e) => e.person))].sort();
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6">
+    <div ref={containerRef} className="max-w-6xl mx-auto p-4 md:p-6 relative overflow-y-auto">
+      {/* Pull to Refresh Indicator */}
+      <PullToRefreshIndicator
+        isPulling={isPulling}
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+      />
+
       {/* Header */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-2">History</h2>
-        <p className="text-slate-400">View all recorded entries</p>
+        <p className="text-slate-400">View all recorded entries · Pull down to refresh</p>
       </div>
 
       {/* Filters */}

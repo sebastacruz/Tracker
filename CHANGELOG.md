@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Pull-to-Refresh**: Mobile-native gesture to refresh data
+  - Added to History and Dashboard views
+  - Visual feedback with animated spinner
+  - Smooth pull-down gesture with resistance
+  - Automatic reload when threshold reached (80px)
+- **Confirmation Dialog**: Safety check before recording dabs
+  - Shows person name and dab size before recording
+  - Prevents accidental data entry
+  - Clean modal UI with backdrop blur
+  - Confirm/Cancel actions with clear buttons
+
 ### Planned
 - Multi-user authentication system
 - Cloud sync across devices

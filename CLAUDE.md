@@ -22,7 +22,10 @@ git push origin main     # Push & deploy
 
 ### File Locations
 - **Components**: `src/components/*.jsx`
+  - ConfirmDialog.jsx - Reusable confirmation modal
+  - PullToRefreshIndicator.jsx - Visual pull-to-refresh feedback
 - **Hooks**: `src/hooks/*.js`
+  - usePullToRefresh.js - Pull-to-refresh gesture detection
 - **Utils**: `src/utils/*.js`
 - **Styles**: `src/styles/globals.css`
 - **Config**: `vite.config.js`, `tailwind.config.js`

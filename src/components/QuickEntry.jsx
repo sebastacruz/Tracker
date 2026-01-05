@@ -2,9 +2,9 @@
  * QuickEntry component - Main data entry screen
  * Optimized for quick, one-tap entry of substance usage data
  */
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useEntries } from '../hooks/useEntries';
-import { calculateDelta } from '../utils/calculations';
+import ConfirmDialog from './ConfirmDialog';
 
 /**
  * Sanitize input to prevent XSS attacks
@@ -31,6 +31,7 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
   const [error, setError] = useState('');
   const [showFlavorMenu, setShowFlavorMenu] = useState(false);
   const [showPersonMenu, setShowPersonMenu] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, dabSize: 0 });
 
   const flavorRef = useRef(null);
   const personRef = useRef(null);
@@ -61,49 +62,22 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
     return !isNaN(num) && num >= 0;
   };
 
-  // Validate form state for submit button
-  const isFormValid = useMemo(() => {
-    return (
-      selectedSubstance && selectedPerson && isValidMass(initialMass) && isValidMass(finalMass)
-    );
-  }, [selectedSubstance, selectedPerson, initialMass, finalMass]);
-
-  // Get validation feedback for mass inputs
-  const getMassValidation = (mass) => {
-    if (!mass) return { valid: null, message: '' };
-    const num = parseFloat(mass);
-    if (isNaN(num)) {
-      return { valid: false, message: 'Must be a number' };
-    }
-    if (num < 0) {
-      return { valid: false, message: 'Cannot be negative' };
-    }
-    return { valid: true, message: '' };
-  };
-
-  // Update delta when masses change
-  const handleMassChange = (initial, final) => {
-    setInitialMass(initial);
-    setFinalMass(final);
-
-    if (initial && final && isValidMass(initial) && isValidMass(final)) {
-      const initialNum = parseFloat(initial);
-      const finalNum = parseFloat(final);
-      const calculated = calculateDelta(initialNum, finalNum);
-      setDelta(calculated);
-    } else {
-      setDelta(null);
-    }
-  };
-
   const handleNotesChange = (value) => {
     // Sanitize input to prevent XSS
     const sanitized = sanitizeInput(value);
     setNotes(sanitized);
   };
 
-  const handleDabSize = (deltaValue) => {
+  const handleDabSizeClick = (deltaValue) => {
     if (!selectedSubstance || !selectedPerson) return;
+
+    // Show confirmation dialog
+    setConfirmDialog({ isOpen: true, dabSize: deltaValue });
+  };
+
+  const handleConfirmDab = () => {
+    const deltaValue = confirmDialog.dabSize;
+    setConfirmDialog({ isOpen: false, dabSize: 0 });
 
     const substance = substances.find((s) => s.id === selectedSubstance);
     if (!substance) return;
@@ -134,6 +108,10 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
     } catch (err) {
       setError(err.message || 'Error saving entry');
     }
+  };
+
+  const handleCancelDab = () => {
+    setConfirmDialog({ isOpen: false, dabSize: 0 });
   };
 
   const handleSubmit = (e) => {
@@ -298,7 +276,7 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
           <div className="grid grid-cols-3 gap-3">
             <button
               type="button"
-              onClick={() => handleDabSize(0.03)}
+              onClick={() => handleDabSizeClick(0.03)}
               disabled={!selectedSubstance || !selectedPerson}
               className={`btn-secondary py-4 flex flex-col items-center justify-center transition-transform ${
                 !selectedSubstance || !selectedPerson
@@ -313,7 +291,7 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
 
             <button
               type="button"
-              onClick={() => handleDabSize(0.04)}
+              onClick={() => handleDabSizeClick(0.04)}
               disabled={!selectedSubstance || !selectedPerson}
               className={`btn-secondary py-4 flex flex-col items-center justify-center transition-transform ${
                 !selectedSubstance || !selectedPerson
@@ -328,7 +306,7 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
 
             <button
               type="button"
-              onClick={() => handleDabSize(0.05)}
+              onClick={() => handleDabSizeClick(0.05)}
               disabled={!selectedSubstance || !selectedPerson}
               className={`btn-secondary py-4 flex flex-col items-center justify-center transition-transform ${
                 !selectedSubstance || !selectedPerson
@@ -357,6 +335,17 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
           {notes && <p className="text-xs text-slate-400 mt-1">{notes.length}/200 characters</p>}
         </div>
       </form>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onConfirm={handleConfirmDab}
+        onCancel={handleCancelDab}
+        title="Confirm Entry"
+        message={`Record a ${confirmDialog.dabSize}g dab for ${selectedPerson}?`}
+        confirmText="Yes, Record"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

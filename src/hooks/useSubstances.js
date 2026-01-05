@@ -14,7 +14,7 @@ export function useSubstances() {
     setSubstances(data.substances || []);
   }, []);
 
-  const addSubstance = useCallback((name, theoreticalInitialMass) => {
+  const addSubstance = useCallback((name, theoreticalInitialMass, totalInitialMass = null) => {
     if (!name || typeof theoreticalInitialMass !== 'number') {
       throw new Error('Invalid substance data');
     }
@@ -23,11 +23,12 @@ export function useSubstances() {
       id: uuidv4(),
       name: name.trim(),
       theoreticalInitialMass: Number(theoreticalInitialMass),
+      totalInitialMass: totalInitialMass ? Number(totalInitialMass) : null,
       createdAt: new Date().toISOString(),
       active: true,
     };
 
-    setSubstances(prev => {
+    setSubstances((prev) => {
       const updated = [...prev, newSubstance];
       const data = getData();
       saveData({ ...data, substances: updated });
@@ -38,8 +39,8 @@ export function useSubstances() {
   }, []);
 
   const updateSubstance = useCallback((id, updates) => {
-    setSubstances(prev => {
-      const updated = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+    setSubstances((prev) => {
+      const updated = prev.map((s) => (s.id === id ? { ...s, ...updates } : s));
       const data = getData();
       saveData({ ...data, substances: updated });
       return updated;
@@ -48,8 +49,8 @@ export function useSubstances() {
 
   const deleteSubstance = useCallback((id) => {
     if (window.confirm('Delete this substance? Historical data will remain.')) {
-      setSubstances(prev => {
-        const updated = prev.filter(s => s.id !== id);
+      setSubstances((prev) => {
+        const updated = prev.filter((s) => s.id !== id);
         const data = getData();
         saveData({ ...data, substances: updated });
         return updated;
@@ -57,9 +58,12 @@ export function useSubstances() {
     }
   }, []);
 
-  const getSubstanceById = useCallback((id) => {
-    return substances.find(s => s.id === id);
-  }, [substances]);
+  const getSubstanceById = useCallback(
+    (id) => {
+      return substances.find((s) => s.id === id);
+    },
+    [substances]
+  );
 
   return {
     substances,

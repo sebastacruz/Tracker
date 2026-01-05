@@ -10,6 +10,41 @@
 
 ## Phase 7: Dabta Redesign (v1.2.0)
 
+### January 5, 2026
+
+#### Feature Enhancement: Total Initial Mass Field ✅
+**Goal**: Add optional "Total Initial Mass" field when creating flavors and ensure new flavors are immediately selectable.
+
+**Changes Made**:
+1. **SubstanceManager Component** ([SubstanceManager.jsx:128-141](src/components/SubstanceManager.jsx#L128-L141))
+   - Added optional "Total Initial Mass" input field
+   - Validation for positive values if provided
+   - Updated form reset to clear new field
+   - Display "Total Mass" in substance stats when provided (blue highlight)
+   - Enhanced success message: "Flavor added! You can now select it from the entry screen."
+
+2. **useSubstances Hook** ([useSubstances.js:17](src/hooks/useSubstances.js#L17))
+   - Updated `addSubstance` to accept optional `totalInitialMass` parameter
+   - Schema update: Added `totalInitialMass` field to substance objects
+   - Backward compatible: Defaults to `null` if not provided
+
+3. **Data Flow**:
+   - New flavors automatically available in QuickEntry dropdown
+   - Shared hook state ensures real-time updates across components
+   - localStorage persists both theoretical and total masses
+
+**Technical Notes**:
+- Maintained backward compatibility (existing data unaffected)
+- ESLint errors resolved (HTML entity escaping, unused variables)
+- Production build successful (570KB bundle)
+- No breaking changes to existing functionality
+
+**User Experience**:
+- Optional field - users can skip if not needed
+- Clear distinction: "Theoretical Initial Mass" vs "Total Initial Mass"
+- Visual differentiation: Total mass shown in blue in stats
+- Immediate feedback: New flavors ready for use after creation
+
 ### January 4, 2026
 
 #### Project Overview ✅

@@ -13,12 +13,13 @@ import { useEntries } from '../hooks/useEntries';
 import { getSubstanceRemaining, getUsageRate, getProjectedDepletion } from '../utils/calculations';
 
 export default function SubstanceManager() {
-  const { substances, addSubstance, updateSubstance, deleteSubstance } = useSubstances();
+  const { substances, addSubstance, deleteSubstance } = useSubstances();
   const { entries, getEntriesBySubstance } = useEntries();
 
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [theoreticalMass, setTheoreticalMass] = useState('1');
+  const [totalInitialMass, setTotalInitialMass] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -37,13 +38,25 @@ export default function SubstanceManager() {
       return;
     }
 
+    if (totalInitialMass && parseFloat(totalInitialMass) <= 0) {
+      setError('Total initial mass must be positive if provided');
+      return;
+    }
+
     try {
-      addSubstance(name, parseFloat(theoreticalMass));
+      addSubstance(
+        name,
+        parseFloat(theoreticalMass),
+        totalInitialMass ? parseFloat(totalInitialMass) : null
+      );
       setName('');
-      setTheoreticalMass('');
+      setTheoreticalMass('1');
+      setTotalInitialMass('');
       setShowForm(false);
-      setSuccess('Flavor added!');
-      setTimeout(() => setSuccess(''), 3000);
+      setSuccess('Flavor added! You can now select it from the entry screen.');
+      setTimeout(() => {
+        setSuccess('');
+      }, 5000);
     } catch (err) {
       setError(err.message || 'Error adding flavor');
     }
@@ -109,6 +122,22 @@ export default function SubstanceManager() {
               </p>
             </div>
 
+            <div>
+              <label className="label-base">Total Initial Mass (g) - Optional</label>
+              <input
+                type="number"
+                step="0.01"
+                value={totalInitialMass}
+                onChange={(e) => setTotalInitialMass(e.target.value)}
+                placeholder="e.g., 3.5"
+                className="input-base w-full"
+              />
+              <p className="text-xs text-slate-400 mt-2">
+                The total purchased amount. This will be tracked separately and displayed as
+                &quot;Total Mass&quot; in the substance details.
+              </p>
+            </div>
+
             <div className="flex gap-2">
               <button type="submit" className="btn-primary flex-1">
                 Add
@@ -119,6 +148,7 @@ export default function SubstanceManager() {
                   setShowForm(false);
                   setName('');
                   setTheoreticalMass('1');
+                  setTotalInitialMass('');
                   setError('');
                 }}
                 className="btn-secondary flex-1"
@@ -160,6 +190,14 @@ export default function SubstanceManager() {
 
                 {/* Stats */}
                 <div className="space-y-2 mb-4 text-sm">
+                  {substance.totalInitialMass && (
+                    <div className="flex justify-between text-slate-300">
+                      <span>Total Mass:</span>
+                      <span className="font-mono font-bold text-blue-400">
+                        {substance.totalInitialMass}g
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-slate-300">
                     <span>Initial (Theoretical):</span>
                     <span className="font-mono">{substance.theoreticalInitialMass}g</span>

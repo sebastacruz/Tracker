@@ -15,8 +15,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { getSubstanceRemaining, formatTimestamp } from '../utils/calculations';
-import { usePullToRefresh } from '../hooks/usePullToRefresh';
-import PullToRefreshIndicator from './PullToRefreshIndicator';
 
 const COLORS = [
   '#2E6F40',
@@ -35,14 +33,14 @@ export default function Dashboard({ substances, entries }) {
     return activeSubstances.length > 0 ? [activeSubstances[0].id] : [];
   });
   const [showMenu, setShowMenu] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const menuRef = useRef(null);
 
-  // Pull to refresh
-  const handleRefresh = async () => {
+  // Refresh handler
+  const handleRefresh = () => {
+    setIsRefreshing(true);
     window.location.reload();
   };
-
-  const { containerRef, isPulling, pullDistance, isRefreshing } = usePullToRefresh(handleRefresh);
 
   // Update selectedSubstances when substances change
   useEffect(() => {
@@ -175,18 +173,35 @@ export default function Dashboard({ substances, entries }) {
   }
 
   return (
-    <div ref={containerRef} className="max-w-6xl mx-auto p-4 md:p-6 relative overflow-y-auto">
-      {/* Pull to Refresh Indicator */}
-      <PullToRefreshIndicator
-        isPulling={isPulling}
-        pullDistance={pullDistance}
-        isRefreshing={isRefreshing}
-      />
-
+    <div className="max-w-6xl mx-auto p-4 md:p-6 relative overflow-y-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-        <p className="text-slate-400">Visual analytics and trends · Pull down to refresh</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
+          <p className="text-slate-400">Visual analytics and trends</p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600
+                     text-white rounded-lg transition-colors flex items-center gap-2"
+          aria-label="Refresh dashboard"
+        >
+          <svg
+            className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh
+        </button>
       </div>
 
       {/* Flavor Selector - Multi-select */}

@@ -16,6 +16,8 @@ export function usePullToRefresh(onRefresh, options = {}) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const touchStartY = useRef(0);
+  const touchStartX = useRef(0);
+  const gestureDetected = useRef(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -25,38 +27,63 @@ export function usePullToRefresh(onRefresh, options = {}) {
     if (!container) return;
 
     let startY = 0;
+    let startX = 0;
     let currentY = 0;
+    let currentX = 0;
 
     const handleTouchStart = (e) => {
-      // Only trigger if scrolled to top
+      // Only track touches when scrolled to top
       if (container.scrollTop === 0) {
         startY = e.touches[0].clientY;
+        startX = e.touches[0].clientX;
         touchStartY.current = startY;
-        setIsPulling(true);
+        touchStartX.current = startX;
+        gestureDetected.current = false;
+        // Don't set isPulling yet - wait to detect direction
       }
     };
 
     const handleTouchMove = (e) => {
-      if (!isPulling) return;
+      if (container.scrollTop !== 0) return;
 
       currentY = e.touches[0].clientY;
-      const distance = currentY - startY;
+      currentX = e.touches[0].clientX;
+      const deltaY = currentY - startY;
+      const deltaX = currentX - startX;
 
-      // Only allow pulling down
-      if (distance > 0 && container.scrollTop === 0) {
+      // Detect gesture direction only once
+      if (!gestureDetected.current) {
+        const absY = Math.abs(deltaY);
+        const absX = Math.abs(deltaX);
+
+        // Require minimum movement to detect gesture
+        if (absY > 15 || absX > 15) {
+          gestureDetected.current = true;
+
+          // Only activate pull-to-refresh if gesture is predominantly vertical
+          // Require 2:1 vertical:horizontal ratio and downward movement
+          if (absY > absX * 2 && deltaY > 15) {
+            setIsPulling(true);
+          }
+          // Otherwise, it's a horizontal swipe or ambiguous - let it through
+        }
+      }
+
+      // Only intercept touch events if we've confirmed this is a pull gesture
+      if (isPulling && deltaY > 0 && container.scrollTop === 0) {
         // Prevent default scrolling
         e.preventDefault();
 
         // Apply resistance to make it feel natural
-        const pulledDistance = distance / resistance;
+        const pulledDistance = deltaY / resistance;
         setPullDistance(pulledDistance);
-      } else {
-        setIsPulling(false);
-        setPullDistance(0);
       }
     };
 
     const handleTouchEnd = () => {
+      // Reset gesture detection
+      gestureDetected.current = false;
+
       if (pullDistance >= threshold && !isRefreshing) {
         setIsRefreshing(true);
 

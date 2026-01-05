@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { useEntries } from '../hooks/useEntries';
 import { formatTimestamp } from '../utils/calculations';
 
-export default function History({ substances }) {
-  const { entries, deleteEntry } = useEntries();
+export default function History({ substances, entries }) {
+  const { deleteEntry } = useEntries();
   const [selectedSubstance, setSelectedSubstance] = useState('');
   const [selectedPerson, setSelectedPerson] = useState('');
 

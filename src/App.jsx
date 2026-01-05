@@ -11,9 +11,11 @@ import Settings from './components/Settings';
 import SwipeContainer, { PAGES } from './components/SwipeContainer';
 import PageIndicator from './components/PageIndicator';
 import { useSubstances } from './hooks/useSubstances';
+import { useEntries } from './hooks/useEntries';
 
 export default function App() {
   const { substances } = useSubstances();
+  const { entries } = useEntries();
   const [currentView, setCurrentView] = useState('entry');
   const [showSettings, setShowSettings] = useState(false);
 
@@ -59,7 +61,7 @@ export default function App() {
           data-page="entry"
           className="swipe-page flex-shrink-0 w-full min-h-[calc(100vh-4rem)] snap-center"
         >
-          <QuickEntry substances={substances} />
+          <QuickEntry substances={substances} entries={entries} />
         </div>
 
         {/* Page 2: Dashboard */}
@@ -67,7 +69,7 @@ export default function App() {
           data-page="dashboard"
           className="swipe-page flex-shrink-0 w-full min-h-[calc(100vh-4rem)] snap-center"
         >
-          <Dashboard substances={substances} />
+          <Dashboard substances={substances} entries={entries} />
         </div>
 
         {/* Page 3: History */}
@@ -75,7 +77,7 @@ export default function App() {
           data-page="history"
           className="swipe-page flex-shrink-0 w-full min-h-[calc(100vh-4rem)] snap-center"
         >
-          <History substances={substances} />
+          <History substances={substances} entries={entries} />
         </div>
 
         {/* Page 4: Substance Manager (Flavors) */}

@@ -14,7 +14,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { useEntries } from '../hooks/useEntries';
 import { getSubstanceRemaining, formatTimestamp } from '../utils/calculations';
 
 const COLORS = [
@@ -28,8 +27,7 @@ const COLORS = [
   '#f97316',
 ];
 
-export default function Dashboard({ substances }) {
-  const { entries } = useEntries();
+export default function Dashboard({ substances, entries }) {
   const [selectedSubstances, setSelectedSubstances] = useState(() => {
     const activeSubstances = substances.filter((s) => s.active);
     return activeSubstances.length > 0 ? [activeSubstances[0].id] : [];
@@ -247,6 +245,7 @@ export default function Dashboard({ substances }) {
                       dot={{ fill: COLORS[index % COLORS.length], r: 3 }}
                       activeDot={{ r: 5 }}
                       strokeWidth={2}
+                      connectNulls={true}
                     />
                   );
                 })}

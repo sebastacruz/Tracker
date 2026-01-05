@@ -18,8 +18,9 @@ function sanitizeInput(input) {
   return div.innerHTML;
 }
 
-export default function QuickEntry({ substances }) {
-  const { entries, addEntry, getUniquePeople } = useEntries();
+export default function QuickEntry({ substances, entries: entriesProp }) {
+  const { addEntry, getUniquePeople } = useEntries();
+  const entries = entriesProp;
   const [selectedSubstance, setSelectedSubstance] = useState('');
   const [selectedPerson, setSelectedPerson] = useState('');
   const [initialMass, setInitialMass] = useState('');
@@ -182,11 +183,6 @@ export default function QuickEntry({ substances }) {
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Take a dab</h2>
-      </div>
-
       {/* Success Message */}
       {success && (
         <div className="mb-4 p-4 bg-emerald-950/50 border border-emerald-700 rounded-lg text-emerald-200">

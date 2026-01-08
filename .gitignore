@@ -70,7 +70,6 @@ temp/
 
 # Project-specific
 tracker-*.json
-!tracker-2026-01-02.json  # Keep sample export file
 
 # Claude Code / MCP
 .claude/

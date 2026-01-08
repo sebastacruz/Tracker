@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **UI Simplification (2026-01-08)**: Streamlined interface with button-based interactions
+  - Replaced all dropdown menus with button grids (2-column layout)
+  - QuickEntry: Flavor and person selection now use button grids with emerald highlighting
+  - Dashboard: Multi-select flavor buttons with "Select All" and "Clear All" controls
+  - Settings page added as 5th swipeable page (linear navigation flow)
+  - Removed "Dabta" title and settings gear icon from navbar
+  - Dashboard simplified: Removed "Usage by Person" and "All Flavors Overview" charts
+  - Only "Remaining Over Time" chart remains for cleaner analytics view
+  - Removed "(tap to record)" text from dab size label
+  - All changes maintain dark theme and mobile-first design
+  - E2E test suite created with Playwright (13 tests, 7 passing core functionality)
 - **Pull-to-Refresh**: Mobile-native gesture to refresh data
   - Added to History and Dashboard views
   - Visual feedback with animated spinner
@@ -20,6 +31,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents accidental data entry
   - Clean modal UI with backdrop blur
   - Confirm/Cancel actions with clear buttons
+
+### Changed
+- **Navigation System**: Settings accessible via swipe (5 pages total: Entry → Dashboard → History → Flavors → Settings)
+- **Button Interactions**: Selected buttons show emerald-500 border and emerald-500/20 background
+- **Navbar Simplified**: Now just spacing element (maintains layout consistency)
+
+### Removed
+- Dropdown menus throughout app (replaced with button grids)
+- Settings modal/overlay functionality
+- Settings gear icon from navbar
+- "Dabta" title from navbar
+- Dashboard "Usage by Person" chart
+- Dashboard "All Flavors Overview" chart
+- "(tap to record)" helper text
 
 ### Planned
 - Multi-user authentication system

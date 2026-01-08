@@ -1,0 +1,142 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - navigation [ref=e4]
+  - generic [ref=e6]:
+    - generic [ref=e9]:
+      - generic [ref=e11]: Select Flavor
+      - generic [ref=e13]: Select Person
+      - generic [ref=e14]:
+        - generic [ref=e15]: Dab Size
+        - alert [ref=e16]: Please select a flavor and person before choosing dab size
+        - paragraph [ref=e17]: ⚠️ Please select a flavor and person first
+        - generic [ref=e18]:
+          - button "Record small dab of 0.03 grams" [disabled] [ref=e19]:
+            - generic [ref=e20]: Small
+            - generic [ref=e21]: 0.03g
+          - button "Record regular dab of 0.04 grams" [disabled] [ref=e22]:
+            - generic [ref=e23]: Regular
+            - generic [ref=e24]: 0.04g
+          - button "Record large dab of 0.05 grams" [disabled] [ref=e25]:
+            - generic [ref=e26]: Large
+            - generic [ref=e27]: 0.05g
+      - generic [ref=e28]:
+        - generic [ref=e29]: Notes (Optional)
+        - textbox "Add any notes about this entry..." [active] [ref=e30]
+    - generic [ref=e33]:
+      - paragraph [ref=e34]: No data to display
+      - paragraph [ref=e35]: Add substances and entries to see charts
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - heading "History" [level=2] [ref=e40]
+          - paragraph [ref=e41]: View all recorded entries
+        - button "Refresh history" [ref=e42] [cursor=pointer]:
+          - img [ref=e43]
+          - text: Refresh
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47]: Filter by Flavor
+          - combobox [ref=e48]:
+            - option "All flavors" [selected]
+        - generic [ref=e49]:
+          - generic [ref=e50]: Filter by Person
+          - combobox [ref=e51]:
+            - option "All people" [selected]
+      - generic [ref=e52]: Showing 0 of 0 entries
+      - generic [ref=e53]:
+        - paragraph [ref=e54]: No entries found
+        - paragraph [ref=e55]: Start by recording your first entry in Quick Entry
+    - generic [ref=e57]:
+      - heading "Flavors" [level=2] [ref=e59]
+      - button "+ Add New Flavor" [ref=e60] [cursor=pointer]
+      - generic [ref=e61]:
+        - paragraph [ref=e62]: No flavors yet
+        - paragraph [ref=e63]: Add your first flavor to get started
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - heading "Settings" [level=2] [ref=e68]
+        - paragraph [ref=e69]: Export data & app configuration
+      - generic [ref=e70]:
+        - heading "Import Data" [level=3] [ref=e71]
+        - paragraph [ref=e72]: Restore your data from a backup JSON file.
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - heading "Import from JSON Backup" [level=4] [ref=e76]
+            - paragraph [ref=e77]: Select a JSON backup file to restore all your substances and entries.
+          - generic [ref=e79] [cursor=pointer]: Choose Backup File
+        - generic [ref=e80]: "⚠️ Warning: Importing will replace all existing data. Make sure to export your current data first if you want to keep it!"
+      - generic [ref=e81]:
+        - heading "Export Data" [level=3] [ref=e82]
+        - paragraph [ref=e83]: Download your data for backup, analysis, or import into other tools.
+        - generic [ref=e84]:
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - heading "Export as JSON" [level=4] [ref=e88]
+              - paragraph [ref=e89]: Complete data backup including all substances and entries. Use this to import data elsewhere or keep as backup.
+            - button "Download JSON" [ref=e90] [cursor=pointer]
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - heading "Export as CSV" [level=4] [ref=e94]
+              - paragraph [ref=e95]: Entries in spreadsheet format. Perfect for analysis in Excel, Google Sheets, or your analytics tools.
+            - button "Download CSV" [ref=e96] [cursor=pointer]
+        - generic [ref=e97]:
+          - heading "Data Summary" [level=4] [ref=e98]
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - paragraph [ref=e101]: Active Substances
+              - paragraph [ref=e102]: "0"
+            - generic [ref=e103]:
+              - paragraph [ref=e104]: Total Entries
+              - paragraph [ref=e105]: "0"
+            - generic [ref=e106]:
+              - paragraph [ref=e107]: Total Usage
+              - paragraph [ref=e108]: 0.00g
+            - generic [ref=e109]:
+              - paragraph [ref=e110]: People Tracked
+              - paragraph [ref=e111]: "0"
+      - generic [ref=e112]:
+        - heading "Sync to iCloud (Optional)" [level=3] [ref=e113]
+        - paragraph [ref=e114]: Keep your exported JSON file in your iCloud Files folder so you can access it from your Mac for analytics and backup.
+        - list [ref=e116]:
+          - listitem [ref=e117]: Export your data as JSON (button above)
+          - listitem [ref=e118]: Open the Files app on your iPhone
+          - listitem [ref=e119]: Go to iCloud Drive (or any synced location)
+          - listitem [ref=e120]: Upload the tracker JSON file there
+          - listitem [ref=e121]: On your Mac, it will appear in iCloud Drive
+          - listitem [ref=e122]: You can now analyze the JSON with your own tools
+        - generic [ref=e123]: The exported JSON stays in sync with your latest entries once you export it. Re-export periodically to update the file.
+      - generic [ref=e124]:
+        - heading "Data Management" [level=3] [ref=e125]
+        - paragraph [ref=e126]: Manage your app data. Be careful with destructive actions!
+        - button "Clear All Data" [ref=e127] [cursor=pointer]
+        - paragraph [ref=e128]: "⚠️ Warning: This will permanently delete all substances and entries. Make sure you've exported your data first!"
+      - generic [ref=e129]:
+        - heading "Frequently Asked Questions" [level=3] [ref=e130]
+        - generic [ref=e131]:
+          - generic [ref=e132]:
+            - heading "Where does my data live?" [level=4] [ref=e133]
+            - paragraph [ref=e134]: Data is stored in your browser's localStorage on your phone. When you export, it creates a file that you control.
+          - generic [ref=e135]:
+            - heading "How do I back up my data?" [level=4] [ref=e136]
+            - paragraph [ref=e137]: Click “Download JSON” to save your complete data. Store it safely, or upload it to iCloud Drive.
+          - generic [ref=e138]:
+            - heading "Can I analyze my data externally?" [level=4] [ref=e139]
+            - paragraph [ref=e140]: Yes! Export as CSV for spreadsheets, or as JSON for programmatic analysis with Python, R, etc.
+          - generic [ref=e141]:
+            - heading "How do I restore my data from a backup?" [level=4] [ref=e142]
+            - paragraph [ref=e143]: Use the “Choose Backup File” button above to select your JSON backup file. The app will restore all your substances and entries automatically.
+          - generic [ref=e144]:
+            - heading "What if I lose my phone?" [level=4] [ref=e145]
+            - paragraph [ref=e146]: Your exported JSON files in iCloud Drive persist. Reinstall the app, import your backup, and you're back in business!
+          - generic [ref=e147]:
+            - heading "How often should I export?" [level=4] [ref=e148]
+            - paragraph [ref=e149]: Export after each week of tracking, or whenever you want a backup. It only takes seconds.
+  - generic [ref=e150]:
+    - button "Go to Entry page" [ref=e151] [cursor=pointer]
+    - button "Go to Stats page" [ref=e152] [cursor=pointer]
+    - button "Go to History page" [ref=e153] [cursor=pointer]
+    - button "Go to Flavors page" [ref=e154] [cursor=pointer]
+    - button "Go to undefined page" [ref=e155] [cursor=pointer]
+```

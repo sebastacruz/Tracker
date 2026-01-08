@@ -1,10 +1,19 @@
 # Dabta - Dab Usage Tracker
 
-> Version 1.2.0 | [Live App](https://sebastacruz.github.io/Tracker/) | [Changelog](CHANGELOG.md)
+> Version 1.2.0 (1.3.0 pending) | [Live App](https://sebastacruz.github.io/Tracker/) | [Changelog](CHANGELOG.md)
 
-A simple, privacy-first web app to track cannabis concentrate usage using mass measurements. Built for iPhone Safari with one-tap dab recording, swipe navigation, and manual iCloud backup.
+A simple, privacy-first web app to track cannabis concentrate usage using mass measurements. Built for iPhone Safari with button-based interface, swipe navigation, and manual iCloud backup.
 
-## ✨ What's New in v1.2.0
+## ✨ What's New in v1.3.0 (Unreleased)
+
+- 🎯 **Button-Based Interface** - Replaced all dropdowns with touch-friendly button grids
+- 📊 **Simplified Dashboard** - Single chart view for cleaner analytics
+- 🔀 **Settings as Swipeable Page** - Natural navigation flow (5 pages total)
+- 🎨 **Minimal Navbar** - Removed title and gear icon for maximum content space
+- ⚡ **Multi-Select Buttons** - Dashboard flavor selection with "Select All" / "Clear All"
+- 🧹 **Cleaner Labels** - Removed "(tap to record)" helper text
+
+## ✨ Recent Updates (v1.2.0)
 
 - 🎨 **Rebranded to "Dabta"** - New identity with earth-green design system
 - ⚡ **One-Tap Recording** - Preset dab sizes (Small/Regular/Large) for instant entry

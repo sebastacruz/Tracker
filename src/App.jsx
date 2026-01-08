@@ -17,43 +17,10 @@ export default function App() {
   const { substances } = useSubstances();
   const { entries } = useEntries();
   const [currentView, setCurrentView] = useState('entry');
-  const [showSettings, setShowSettings] = useState(false);
-
-  // Handle view change from swipe or indicator
-  const handleViewChange = (view) => {
-    if (view === 'settings') {
-      setShowSettings(true);
-    } else {
-      setShowSettings(false);
-      setCurrentView(view);
-    }
-  };
-
-  // Settings modal/overlay
-  if (showSettings) {
-    return (
-      <div className="min-h-screen bg-primary text-primary">
-        <Navbar
-          currentView="settings"
-          onViewChange={handleViewChange}
-          onSettingsToggle={() => setShowSettings(false)}
-          showSettingsGear={true}
-        />
-        <main className="pb-8">
-          <Settings />
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-primary text-primary flex flex-col">
-      <Navbar
-        currentView={currentView}
-        onViewChange={handleViewChange}
-        onSettingsToggle={() => setShowSettings(true)}
-        showSettingsGear={true}
-      />
+      <Navbar />
 
       <SwipeContainer currentView={currentView} onViewChange={setCurrentView}>
         {/* Page 1: Quick Entry */}
@@ -86,6 +53,16 @@ export default function App() {
           className="swipe-page flex-shrink-0 w-full min-h-[calc(100vh-4rem)] snap-center"
         >
           <SubstanceManager />
+        </div>
+
+        {/* Page 5: Settings */}
+        <div
+          data-page="settings"
+          className="swipe-page flex-shrink-0 w-full min-h-[calc(100vh-4rem)] snap-center"
+        >
+          <div className="max-w-2xl mx-auto p-4 md:p-6">
+            <Settings substances={substances} entries={entries} />
+          </div>
         </div>
       </SwipeContainer>
 

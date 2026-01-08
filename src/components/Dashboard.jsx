@@ -1,7 +1,7 @@
 /**
  * Dashboard component - Visual analytics with charts
  */
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -32,9 +32,7 @@ export default function Dashboard({ substances, entries }) {
     const activeSubstances = substances.filter((s) => s.active);
     return activeSubstances.length > 0 ? [activeSubstances[0].id] : [];
   });
-  const [showMenu, setShowMenu] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const menuRef = useRef(null);
 
   // Refresh handler
   const handleRefresh = () => {
@@ -49,32 +47,6 @@ export default function Dashboard({ substances, entries }) {
       setSelectedSubstances([activeSubstances[0].id]);
     }
   }, [substances]);
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowMenu(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, []);
-
-  const toggleSubstance = (substanceId) => {
-    setSelectedSubstances((prev) => {
-      if (prev.includes(substanceId)) {
-        return prev.filter((id) => id !== substanceId);
-      } else {
-        return [...prev, substanceId];
-      }
-    });
-  };
 
   // Get substance lookup
   const substanceLookup = useMemo(() => {
@@ -124,43 +96,6 @@ export default function Dashboard({ substances, entries }) {
     return Object.values(timeMap).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   }, [selectedSubstances, entries, substanceLookup]);
 
-  // Chart 2: Usage by person (for selected substances)
-  const usageByPersonData = useMemo(() => {
-    if (selectedSubstances.length === 0) return [];
-
-    const substanceEntries = entries.filter((e) => selectedSubstances.includes(e.substanceId));
-
-    const personMap = {};
-    substanceEntries.forEach((entry) => {
-      if (!personMap[entry.person]) {
-        personMap[entry.person] = 0;
-      }
-      personMap[entry.person] += entry.delta;
-    });
-
-    return Object.entries(personMap)
-      .map(([person, usage]) => ({
-        name: person,
-        usage: Number(usage.toFixed(2)),
-      }))
-      .sort((a, b) => b.usage - a.usage);
-  }, [selectedSubstances, entries]);
-
-  // Chart 3: All substances remaining
-  const allSubstancesData = useMemo(() => {
-    return substances
-      .filter((s) => s.active)
-      .map((substance) => {
-        const remaining = getSubstanceRemaining(substance, entries);
-        return {
-          name: substance.name,
-          remaining: remaining,
-          theoretical: substance.theoreticalInitialMass,
-          used: substance.theoreticalInitialMass - remaining,
-        };
-      });
-  }, [substances, entries]);
-
   if (substances.length === 0) {
     return (
       <div className="max-w-6xl mx-auto p-4 md:p-6">
@@ -204,44 +139,55 @@ export default function Dashboard({ substances, entries }) {
         </button>
       </div>
 
-      {/* Flavor Selector - Multi-select */}
-      <div ref={menuRef} className="card mb-6 max-w-md relative">
-        <label className="label-base">Select Flavors</label>
-        <button
-          onClick={() => setShowMenu(!showMenu)}
-          className="input-base w-full text-left flex justify-between items-center cursor-pointer"
-        >
-          <span className="truncate">
-            {selectedSubstances.length === 0
-              ? 'No flavors selected'
-              : selectedSubstances.length === 1
-                ? substances.find((s) => s.id === selectedSubstances[0])?.name
-                : `${selectedSubstances.length} flavors selected`}
-          </span>
-          <span className="text-slate-400">{showMenu ? '▲' : '▼'}</span>
-        </button>
-
-        {showMenu && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-secondary border border-slate-700 rounded-xl z-50 max-h-64 overflow-y-auto shadow-xl">
-            {substances
-              .filter((s) => s.active)
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((substance) => (
-                <label
-                  key={substance.id}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-tertiary cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSubstances.includes(substance.id)}
-                    onChange={() => toggleSubstance(substance.id)}
-                    className="w-4 h-4 accent-emerald-600 cursor-pointer"
-                  />
-                  <span className="text-sm">{substance.name}</span>
-                </label>
-              ))}
+      {/* Flavor Selector - Button Grid */}
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center justify-between">
+          <label className="label-base">Select Flavors</label>
+          <div className="flex gap-2">
+            <button
+              onClick={() =>
+                setSelectedSubstances(substances.filter((s) => s.active).map((s) => s.id))
+              }
+              className="px-3 py-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors"
+            >
+              Select All
+            </button>
+            <button
+              onClick={() => setSelectedSubstances([])}
+              className="px-3 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded transition-colors"
+            >
+              Clear All
+            </button>
           </div>
-        )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {substances
+            .filter((s) => s.active)
+            .map((substance) => {
+              const isSelected = selectedSubstances.includes(substance.id);
+              return (
+                <button
+                  key={substance.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedSubstances((prev) =>
+                      isSelected
+                        ? prev.filter((id) => id !== substance.id)
+                        : [...prev, substance.id]
+                    );
+                  }}
+                  className={`px-4 py-3 rounded-lg border-2 transition-all text-left ${
+                    isSelected
+                      ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
+                      : 'border-slate-700 bg-slate-800 hover:border-slate-600 text-slate-300'
+                  }`}
+                >
+                  {substance.name}
+                </button>
+              );
+            })}
+        </div>
       </div>
 
       {/* Charts Grid */}
@@ -288,59 +234,7 @@ export default function Dashboard({ substances, entries }) {
             <p className="text-slate-400">No entries yet for selected substances</p>
           </div>
         )}
-
-        {/* Usage by Person */}
-        {usageByPersonData.length > 0 ? (
-          <div className="card col-span-full md:col-span-1">
-            <h3 className="text-lg font-bold mb-4">Usage by Person</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={usageByPersonData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1A1A1A',
-                    border: '1px solid #303030',
-                    borderRadius: '8px',
-                  }}
-                  labelStyle={{ color: '#e2e8f0' }}
-                />
-                <Bar dataKey="usage" fill="#2E6F40" name="Usage (g)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="card col-span-full md:col-span-1 flex items-center justify-center py-12">
-            <p className="text-slate-400">No entries yet</p>
-          </div>
-        )}
       </div>
-
-      {/* All Flavors Overview */}
-      {allSubstancesData.length > 0 && (
-        <div className="card">
-          <h3 className="text-lg font-bold mb-4">All Flavors Overview</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={allSubstancesData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '12px' }} />
-              <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #475569',
-                  borderRadius: '8px',
-                }}
-                labelStyle={{ color: '#e2e8f0' }}
-              />
-              <Legend />
-              <Bar dataKey="remaining" fill="#2E6F40" name="Remaining (g)" />
-              <Bar dataKey="used" fill="#ef4444" name="Used (g)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
     </div>
   );
 }

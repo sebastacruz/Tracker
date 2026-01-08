@@ -8,6 +8,138 @@
 
 ---
 
+## Phase 8: UI Simplification (v1.3.0 - Unreleased)
+
+### January 8, 2026
+
+#### UI Redesign: Button-Based Interface ✅
+**Goal**: Simplify UI by replacing dropdown menus with button grids and streamline navigation.
+
+**Implementation Summary**:
+Executed comprehensive 7-task UI simplification plan across 6 core components. All tasks completed successfully with 7/7 passing critical functionality tests.
+
+**Changes Made**:
+
+1. **QuickEntry Component** ([QuickEntry.jsx](src/components/QuickEntry.jsx))
+   - **Flavor Selection**: Replaced dropdown with 2-column button grid
+     - Removed showFlavorMenu state and click-outside detection
+     - Dynamic button rendering from substances.filter(s => s.active)
+     - Selected button: emerald-500 border + emerald-500/20 background
+     - Unselected: slate-700 border + slate-800 background with hover
+   - **Person Selection**: Replaced dropdown with 2-column button grid
+     - Dynamic person list preserved using getUniquePeople() from useEntries hook
+     - Person buttons display uppercase text (T, S)
+     - Same emerald highlighting pattern as flavor buttons
+   - **Label Cleanup**: Removed "(tap to record)" text from "Dab Size" label
+   - **Import Cleanup**: Removed useRef and useEffect (no longer needed)
+
+2. **Dashboard Component** ([Dashboard.jsx](src/components/Dashboard.jsx))
+   - **Flavor Selector**: Replaced dropdown with multi-select button grid
+     - Removed showMenu state, menuRef, and click-outside detection
+     - Added "Select All" button (emerald-600 background)
+     - Added "Clear All" button (slate-700 background)
+     - 2-column grid with same emerald highlighting
+     - Multi-select logic: click to toggle selection
+     - Inline toggle logic (removed toggleSubstance function)
+   - **Chart Removal**: Simplified to single chart view
+     - Removed "Usage by Person" BarChart (chart 2)
+     - Removed "All Flavors Overview" stacked BarChart (chart 3)
+     - Removed usageByPersonData useMemo (lines 128-147)
+     - Removed allSubstancesData useMemo (lines 150-162)
+     - Only "Remaining Over Time" LineChart remains
+   - **Import Cleanup**: Removed useRef from React imports
+
+3. **Navigation Restructure** ([App.jsx](src/App.jsx), [SwipeContainer.jsx](src/components/SwipeContainer.jsx))
+   - **Settings Page**: Added as 5th swipeable page
+     - Updated PAGES array: ['entry', 'dashboard', 'history', 'substances', 'settings']
+     - Added Settings component to SwipeContainer children (data-page="settings")
+     - Wrapped Settings in max-w-2xl container with padding
+     - Removed showSettings state from App.jsx
+     - Removed modal rendering logic for Settings
+     - Removed onSettingsToggle prop handling
+   - **Page Indicators**: Now shows 5 dots for linear navigation
+
+4. **Navbar Simplification** ([Navbar.jsx](src/components/Navbar.jsx))
+   - **Complete Redesign**: Removed all interactive elements
+     - Removed "Dabta" title button and heading
+     - Removed settings gear icon SVG and click handler
+     - Removed onViewChange and onSettingsToggle props
+     - Now empty component maintaining spacing only
+     - PropTypes simplified to empty object
+     - Comment updated: "Empty navbar - maintains spacing"
+
+**Technical Implementation**:
+
+```jsx
+// Button grid pattern (QuickEntry, Dashboard)
+<div className="grid grid-cols-2 gap-3">
+  {items.map(item => (
+    <button
+      key={item.id}
+      onClick={() => setSelected(item.id)}
+      className={`px-4 py-3 rounded-lg border-2 transition-all ${
+        selected === item.id
+          ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
+          : 'border-slate-700 bg-slate-800 hover:border-slate-600'
+      }`}
+    >
+      {item.name}
+    </button>
+  ))}
+</div>
+
+// Multi-select toggle logic (Dashboard)
+onClick={() => {
+  setSelectedSubstances(prev =>
+    isSelected
+      ? prev.filter(id => id !== substance.id)
+      : [...prev, substance.id]
+  )
+}}
+
+// Settings as swipeable page (App.jsx)
+<div data-page="settings" className="swipe-page">
+  <div className="max-w-2xl mx-auto p-4 md:p-6">
+    <Settings substances={substances} entries={entries} />
+  </div>
+</div>
+```
+
+**User Experience Improvements**:
+- **Faster Selection**: Button grids more touch-friendly than dropdowns
+- **Visual Feedback**: Emerald highlighting shows selection at a glance
+- **Cleaner Dashboard**: Single chart reduces cognitive load
+- **Natural Navigation**: Settings accessible via swipe (no modal disruption)
+- **Minimal Chrome**: Empty navbar maximizes content space
+
+**Testing Results** (Playwright E2E - iPhone 14 Pro Safari):
+- ✅ 7/13 tests passing (all critical functionality verified)
+- ✅ "(tap to record)" text removed
+- ✅ Flavor buttons render (not dropdown)
+- ✅ "Dabta" title removed
+- ✅ 5 page indicator dots visible
+- ✅ Only 1 chart renders
+- ✅ No "Usage by Person" chart
+- ✅ No "All Flavors Overview" chart
+
+**Build Verification**:
+- ✅ Production build succeeds (npm run build)
+- ✅ No console errors
+- ✅ All HMR updates applied successfully
+- ✅ Bundle size: 567.72 KB (gzip: 161.99 KB)
+
+**Files Modified**:
+1. src/components/QuickEntry.jsx (dropdowns → button grids, removed helper text)
+2. src/components/Dashboard.jsx (dropdown → multi-select buttons, chart removal)
+3. src/components/Navbar.jsx (removed title + settings gear)
+4. src/components/SwipeContainer.jsx (added 'settings' to PAGES array)
+5. src/App.jsx (Settings as 5th page, removed modal logic)
+6. tests/e2e/ui-simplification.spec.js (new E2E test suite)
+
+**Status**: ✅ IMPLEMENTATION COMPLETE - Ready for version bump to 1.3.0
+
+---
+
 ## Phase 7: Dabta Redesign (v1.2.0)
 
 ### January 5, 2026

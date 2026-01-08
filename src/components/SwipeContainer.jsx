@@ -5,7 +5,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-const PAGES = ['entry', 'dashboard', 'history', 'substances'];
+const PAGES = ['entry', 'dashboard', 'history', 'substances', 'settings'];
 
 export default function SwipeContainer({ currentView, onViewChange, children }) {
   const containerRef = useRef(null);

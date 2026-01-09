@@ -1,12 +1,15 @@
 /**
- * Dashboard component - Visual analytics with charts
+ * Dashboard component - Personal usage analytics for user "t"
  */
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
   LineChart,
   Line,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,18 +17,16 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { getSubstanceRemaining, formatTimestamp } from '../utils/calculations';
+import {
+  getOverallStats,
+  getPerSubstanceStats,
+  getWeeklyComparison,
+  getDayOfWeekBreakdown,
+  getSubstanceMassDistribution,
+  formatTimestamp,
+} from '../utils/calculations';
 
-const COLORS = [
-  '#2E6F40',
-  '#358D47',
-  '#6B8E6B',
-  '#10b981',
-  '#8b5cf6',
-  '#ec4899',
-  '#06b6d4',
-  '#f97316',
-];
+const COLORS = ['#2E6F40', '#358D47', '#6B8E6B', '#10b981'];
 
 export default function Dashboard({ substances, entries }) {
   const [selectedSubstances, setSelectedSubstances] = useState(() => {
@@ -40,43 +41,51 @@ export default function Dashboard({ substances, entries }) {
     window.location.reload();
   };
 
-  // Update selectedSubstances when substances change
-  useEffect(() => {
-    const activeSubstances = substances.filter((s) => s.active);
-    if (activeSubstances.length > 0 && selectedSubstances.length === 0) {
-      setSelectedSubstances([activeSubstances[0].id]);
-    }
-  }, [substances]);
+  // Calculate all stats for user "t"
+  const overallStats = useMemo(() => getOverallStats(entries, 't'), [entries]);
 
-  // Get substance lookup
-  const substanceLookup = useMemo(() => {
-    return substances.reduce((acc, s) => {
-      acc[s.id] = s;
-      return acc;
-    }, {});
-  }, [substances]);
+  const substanceStats = useMemo(
+    () => getPerSubstanceStats(entries, 't', substances),
+    [entries, substances]
+  );
 
-  // Chart 1: Remaining mass over time for selected substances
+  const weeklyComparison = useMemo(() => getWeeklyComparison(entries, 't'), [entries]);
+
+  const dayOfWeekData = useMemo(() => getDayOfWeekBreakdown(entries, 't'), [entries]);
+
+  const pieChartsData = useMemo(() => {
+    return substances
+      .filter((s) => s.active)
+      .map((substance) => ({
+        substance,
+        distribution: getSubstanceMassDistribution(substance, entries),
+      }));
+  }, [substances, entries]);
+
+  // Chart: Remaining mass over time (filtered to "t")
   const remainingOverTimeData = useMemo(() => {
     if (selectedSubstances.length === 0) return [];
 
-    // Get all entries and sort by timestamp
-    const allEntries = entries
+    const tEntries = entries.filter((e) => e.person === 't');
+    const filteredEntries = tEntries
       .filter((e) => selectedSubstances.includes(e.substanceId))
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    if (allEntries.length === 0) return [];
+    if (filteredEntries.length === 0) return [];
 
-    // Group by timestamp and substance to calculate remaining
+    const substanceLookup = substances.reduce((acc, s) => {
+      acc[s.id] = s;
+      return acc;
+    }, {});
+
     const timeMap = {};
     const substanceRunning = {};
 
-    // Initialize running totals
     selectedSubstances.forEach((id) => {
       substanceRunning[id] = 0;
     });
 
-    allEntries.forEach((entry) => {
+    filteredEntries.forEach((entry) => {
       substanceRunning[entry.substanceId] += entry.delta;
       const time = formatTimestamp(entry.timestamp);
       const key = `${time.date} ${time.time}`;
@@ -88,32 +97,31 @@ export default function Dashboard({ substances, entries }) {
       const substance = substanceLookup[entry.substanceId];
       if (substance) {
         const remaining = substance.theoreticalInitialMass - substanceRunning[entry.substanceId];
-        timeMap[key][`${substance.name}`] = Number(remaining.toFixed(2));
+        timeMap[key][substance.name] = Number(remaining.toFixed(2));
       }
     });
 
-    // Convert to array and sort by timestamp
     return Object.values(timeMap).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  }, [selectedSubstances, entries, substanceLookup]);
+  }, [selectedSubstances, entries, substances]);
 
   if (substances.length === 0) {
     return (
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="card text-center py-12">
           <p className="text-slate-400 text-lg">No data to display</p>
-          <p className="text-slate-500 text-sm mt-2">Add substances and entries to see charts</p>
+          <p className="text-slate-500 text-sm mt-2">Add flavors and entries to see charts</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6 relative overflow-y-auto">
+    <div className="max-w-6xl mx-auto p-4 md:p-6 overflow-y-auto">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-          <p className="text-slate-400">Visual analytics and trends</p>
+          <h2 className="text-3xl font-bold mb-2">Your Stats</h2>
+          <p className="text-slate-400">Personal usage analytics</p>
         </div>
         <button
           onClick={handleRefresh}
@@ -139,10 +147,198 @@ export default function Dashboard({ substances, entries }) {
         </button>
       </div>
 
-      {/* Flavor Selector - Button Grid */}
+      {/* Stats Cards */}
+      <div className="grid gap-4 mb-6 md:grid-cols-2">
+        {/* Overall Summary */}
+        <div className="card">
+          <h3 className="text-lg font-bold mb-4">Overall Summary</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Mass per day</span>
+              <span className="text-2xl font-mono font-bold text-emerald-400">
+                {overallStats.massPerDay}g
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Sessions per day</span>
+              <span className="text-xl font-mono font-bold text-emerald-400">
+                {overallStats.sessionsPerDay}
+              </span>
+            </div>
+            <div className="flex justify-between items-center border-t border-slate-700 pt-3">
+              <span className="text-slate-400">Total mass</span>
+              <span className="font-mono text-slate-300">{overallStats.totalMass}g</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Total sessions</span>
+              <span className="font-mono text-slate-300">{overallStats.totalSessions}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Tracking days</span>
+              <span className="font-mono text-slate-300">{overallStats.dateRange.days}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Weekly Comparison */}
+        <div className="card">
+          <h3 className="text-lg font-bold mb-4">This Week vs Last Week</h3>
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-slate-400">Mass</span>
+              </div>
+              <div className="flex items-baseline gap-3">
+                <span className="text-xl font-mono font-bold text-emerald-400">
+                  {weeklyComparison.current.mass}g
+                </span>
+                <span className="text-sm text-slate-400">
+                  (was {weeklyComparison.previous.mass}g)
+                </span>
+                {weeklyComparison.change.mass !== 0 && (
+                  <span
+                    className={`text-sm font-medium ${
+                      weeklyComparison.change.mass > 0 ? 'text-red-400' : 'text-emerald-400'
+                    }`}
+                  >
+                    {weeklyComparison.change.mass > 0 ? '↑' : '↓'}{' '}
+                    {Math.abs(weeklyComparison.change.mass)}%
+                  </span>
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-slate-400">Sessions</span>
+              </div>
+              <div className="flex items-baseline gap-3">
+                <span className="text-xl font-mono font-bold text-emerald-400">
+                  {weeklyComparison.current.sessions}
+                </span>
+                <span className="text-sm text-slate-400">
+                  (was {weeklyComparison.previous.sessions})
+                </span>
+                {weeklyComparison.change.sessions !== 0 && (
+                  <span
+                    className={`text-sm font-medium ${
+                      weeklyComparison.change.sessions > 0 ? 'text-red-400' : 'text-emerald-400'
+                    }`}
+                  >
+                    {weeklyComparison.change.sessions > 0 ? '↑' : '↓'}{' '}
+                    {Math.abs(weeklyComparison.change.sessions)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Per-Substance Breakdown Table */}
+      {substanceStats.length > 0 && (
+        <div className="card mb-6">
+          <h3 className="text-lg font-bold mb-4">Your Usage by Flavor</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left py-2 px-2 text-slate-400 font-medium">Flavor</th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Used (g)</th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Sessions</th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium">g/day</th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Sess/day</th>
+                </tr>
+              </thead>
+              <tbody>
+                {substanceStats.map((stat) => (
+                  <tr key={stat.substance.id} className="border-b border-slate-800">
+                    <td className="py-3 px-2 font-medium text-slate-200">{stat.substance.name}</td>
+                    <td className="py-3 px-2 text-right font-mono text-emerald-400">
+                      {stat.totalMass}
+                    </td>
+                    <td className="py-3 px-2 text-right font-mono text-slate-300">
+                      {stat.sessions}
+                    </td>
+                    <td className="py-3 px-2 text-right font-mono text-slate-300">
+                      {stat.massPerDay}
+                    </td>
+                    <td className="py-3 px-2 text-right font-mono text-slate-300">
+                      {stat.sessionsPerDay}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Day of Week Chart */}
+      <div className="card mb-6">
+        <h3 className="text-lg font-bold mb-4">Your Usage by Day of Week</h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={dayOfWeekData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <XAxis dataKey="day" stroke="#94a3b8" style={{ fontSize: '12px' }} />
+            <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#1A1A1A',
+                border: '1px solid #303030',
+                borderRadius: '8px',
+              }}
+              labelStyle={{ color: '#e2e8f0' }}
+            />
+            <Legend />
+            <Bar dataKey="avgMass" fill="#2E6F40" name="Avg Mass (g)" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Mass Distribution Pie Charts */}
+      <div className="card mb-6">
+        <h3 className="text-lg font-bold mb-4">Mass Distribution by Flavor</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {pieChartsData.map(({ substance, distribution }) => (
+            <div key={substance.id} className="flex flex-col items-center">
+              <p className="text-sm font-medium text-slate-300 mb-2">{substance.name}</p>
+              <ResponsiveContainer width="100%" height={150}>
+                <PieChart>
+                  <Pie
+                    data={distribution}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={50}
+                    label={({ name, percent }) =>
+                      percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''
+                    }
+                    labelLine={false}
+                  >
+                    {distribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1A1A1A',
+                      border: '1px solid #303030',
+                      borderRadius: '8px',
+                    }}
+                    formatter={(value) => `${value}g`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Flavor Selector for Line Chart */}
       <div className="space-y-4 mb-6">
         <div className="flex items-center justify-between">
-          <label className="label-base">Select Flavors</label>
+          <label className="label-base">Select Flavors for Timeline</label>
           <div className="flex gap-2">
             <button
               onClick={() =>
@@ -190,51 +386,48 @@ export default function Dashboard({ substances, entries }) {
         </div>
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid gap-6 mb-6 md:grid-cols-2">
-        {/* Remaining Over Time */}
-        {remainingOverTimeData.length > 0 ? (
-          <div className="card col-span-full md:col-span-1">
-            <h3 className="text-lg font-bold mb-4">Remaining Over Time</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={remainingOverTimeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1A1A1A',
-                    border: '1px solid #303030',
-                    borderRadius: '8px',
-                  }}
-                  labelStyle={{ color: '#e2e8f0' }}
-                />
-                <Legend />
-                {selectedSubstances.map((substanceId, index) => {
-                  const substance = substanceLookup[substanceId];
-                  return (
-                    <Line
-                      key={substanceId}
-                      type="monotone"
-                      dataKey={substance?.name}
-                      stroke={COLORS[index % COLORS.length]}
-                      name={`${substance?.name} (g)`}
-                      dot={{ fill: COLORS[index % COLORS.length], r: 3 }}
-                      activeDot={{ r: 5 }}
-                      strokeWidth={2}
-                      connectNulls={true}
-                    />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="card col-span-full md:col-span-1 flex items-center justify-center py-12">
-            <p className="text-slate-400">No entries yet for selected substances</p>
-          </div>
-        )}
-      </div>
+      {/* Consumption Over Time Line Chart */}
+      {remainingOverTimeData.length > 0 ? (
+        <div className="card mb-6">
+          <h3 className="text-lg font-bold mb-4">Your Consumption Over Time</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={remainingOverTimeData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="date" stroke="#94a3b8" style={{ fontSize: '12px' }} />
+              <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1A1A1A',
+                  border: '1px solid #303030',
+                  borderRadius: '8px',
+                }}
+                labelStyle={{ color: '#e2e8f0' }}
+              />
+              <Legend />
+              {selectedSubstances.map((substanceId, index) => {
+                const substance = substances.find((s) => s.id === substanceId);
+                return (
+                  <Line
+                    key={substanceId}
+                    type="monotone"
+                    dataKey={substance?.name}
+                    stroke={COLORS[index % COLORS.length]}
+                    name={`${substance?.name} (g remaining)`}
+                    dot={{ fill: COLORS[index % COLORS.length], r: 3 }}
+                    activeDot={{ r: 5 }}
+                    strokeWidth={2}
+                    connectNulls={true}
+                  />
+                );
+              })}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="card flex items-center justify-center py-12">
+          <p className="text-slate-400">Select flavors above to see your consumption timeline</p>
+        </div>
+      )}
     </div>
   );
 }

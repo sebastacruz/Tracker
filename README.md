@@ -6,8 +6,14 @@ A simple, privacy-first web app to track cannabis concentrate usage using mass m
 
 ## ✨ What's New in v1.3.0 (Unreleased)
 
+- 📊 **Personal Stats Dashboard** - Complete analytics redesign focused on your usage
+  - Mass & sessions per day averages prominently displayed
+  - Weekly comparison (this week vs last week) with trend indicators
+  - Per-flavor breakdown table with daily usage rates
+  - Day of week usage patterns (bar chart)
+  - Mass distribution pie charts showing t, e, and remaining for each flavor
+  - All metrics auto-recalculate instantly when new dabs are recorded
 - 🎯 **Button-Based Interface** - Replaced all dropdowns with touch-friendly button grids
-- 📊 **Simplified Dashboard** - Single chart view for cleaner analytics
 - 🔀 **Settings as Swipeable Page** - Natural navigation flow (5 pages total)
 - 🎨 **Minimal Navbar** - Removed title and gear icon for maximum content space
 - ⚡ **Multi-Select Buttons** - Dashboard flavor selection with "Select All" / "Clear All"

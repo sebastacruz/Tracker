@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Personal Stats Dashboard (2026-01-08)**: Complete redesign focused on user "t" analytics
+  - Overall Summary Card: Mass/day, sessions/day, total tracking days
+  - Weekly Comparison: Current week vs previous week with percentage changes
+  - Per-Flavor Breakdown Table: Total usage, sessions, and daily rates per flavor
+  - Day of Week Chart: Bar chart showing average usage patterns (Sun-Sat)
+  - Mass Distribution Pie Charts: Visual breakdown per flavor (t, e, remaining segments)
+  - Consumption Timeline: Line chart filtered to show only user "t" data
+  - Six new calculation functions for comprehensive personal analytics
+  - Auto-recalculation on data changes with useMemo optimization
+  - All metrics focus exclusively on user "t" for personalized insights
 - **UI Simplification (2026-01-08)**: Streamlined interface with button-based interactions
   - Replaced all dropdown menus with button grids (2-column layout)
   - QuickEntry: Flavor and person selection now use button grids with emerald highlighting

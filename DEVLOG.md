@@ -12,6 +12,71 @@
 
 ### January 8, 2026
 
+#### Personal Stats Dashboard ✅
+**Goal**: Transform Dashboard into comprehensive personal analytics view for user "t" with multiple metric visualizations.
+
+**Implementation Summary**:
+Complete Dashboard redesign focusing exclusively on user "t" statistics. Added 6 new calculation functions to support advanced analytics including weekly comparisons, day-of-week patterns, and mass distribution visualizations.
+
+**Changes Made**:
+
+1. **Calculation Functions** ([calculations.js](src/utils/calculations.js:227-431))
+   - `getPersonEntries(entries, person)` - Filter and sort entries by person
+   - `getOverallStats(entries, person)` - Overall usage statistics with per-day averages
+   - `getPerSubstanceStats(entries, person, substances)` - Per-flavor breakdown with daily rates
+   - `getWeeklyComparison(entries, person)` - Current week vs previous week with percentage changes
+   - `getDayOfWeekBreakdown(entries, person)` - Average usage patterns by day (Sun-Sat)
+   - `getSubstanceMassDistribution(substance, entries)` - Pie chart data (t, e, remaining segments)
+
+2. **Dashboard Component** ([Dashboard.jsx](src/components/Dashboard.jsx))
+   - **Stats Cards Grid**:
+     - Overall Summary: Mass/day, sessions/day, total tracking days, total mass, total sessions
+     - Weekly Comparison: Side-by-side comparison with trend arrows (↑/↓) and percentages
+   - **Per-Flavor Breakdown Table**: 5-column table with flavor, used, sessions, g/day, sess/day
+   - **Day of Week Bar Chart**: Recharts BarChart showing average mass per day (Sun-Sat)
+   - **Mass Distribution Pie Charts**: Grid of pie charts (one per flavor, 3 segments each)
+     - Emerald-green for "t" usage
+     - Blue for "e" usage
+     - Slate-gray for remaining mass
+     - Labels show percentages (hidden if < 5%)
+     - Tooltips show exact mass values
+   - **Consumption Timeline**: Line chart filtered to user "t" entries only
+   - **All metrics use useMemo** for auto-recalculation on data changes
+
+**Technical Details**:
+
+```javascript
+// Auto-recalculating stats with useMemo
+const overallStats = useMemo(() => getOverallStats(entries, 't'), [entries]);
+const weeklyComparison = useMemo(() => getWeeklyComparison(entries, 't'), [entries]);
+const dayOfWeekData = useMemo(() => getDayOfWeekBreakdown(entries, 't'), [entries]);
+
+// Pie chart data structure
+const pieChartsData = useMemo(() => {
+  return substances
+    .filter(s => s.active)
+    .map(substance => ({
+      substance,
+      distribution: getSubstanceMassDistribution(substance, entries)
+    }));
+}, [substances, entries]);
+
+// Weekly comparison with trend indicators
+{weeklyComparison.change.mass !== 0 && (
+  <span className={weeklyComparison.change.mass > 0 ? 'text-red-400' : 'text-emerald-400'}>
+    {weeklyComparison.change.mass > 0 ? '↑' : '↓'} {Math.abs(weeklyComparison.change.mass)}%
+  </span>
+)}
+```
+
+**User Experience**:
+- All analytics focus exclusively on user "t" for personalized insights
+- Metrics update instantly when new dabs are recorded
+- Visual hierarchy: Most important metrics (mass/day, sessions/day) prominently displayed
+- Weekly trends help identify usage patterns and changes
+- Day of week chart reveals behavioral patterns
+- Pie charts provide quick visual breakdown of mass allocation per flavor
+
 #### UI Redesign: Button-Based Interface ✅
 **Goal**: Simplify UI by replacing dropdown menus with button grids and streamline navigation.
 

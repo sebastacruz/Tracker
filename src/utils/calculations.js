@@ -39,8 +39,8 @@ export function calculateRemaining(theoreticalMass, deltas = []) {
  */
 export function getSubstancDeltas(substanceId, entries) {
   return entries
-    .filter(entry => entry.substanceId === substanceId)
-    .map(entry => entry.delta || 0);
+    .filter((entry) => entry.substanceId === substanceId)
+    .map((entry) => entry.delta || 0);
 }
 
 /**
@@ -62,7 +62,7 @@ export function getSubstanceRemaining(substance, entries) {
  */
 export function getTotalUsage(substanceId, entries) {
   return entries
-    .filter(entry => entry.substanceId === substanceId)
+    .filter((entry) => entry.substanceId === substanceId)
     .reduce((sum, entry) => sum + (entry.delta || 0), 0);
 }
 
@@ -98,7 +98,7 @@ export function formatTimestamp(timestamp) {
  * @returns {array} - Filtered entries
  */
 export function getEntriesByDateRange(entries, startDate, endDate) {
-  return entries.filter(entry => {
+  return entries.filter((entry) => {
     const entryDate = new Date(entry.timestamp);
     return entryDate >= startDate && entryDate <= endDate;
   });
@@ -111,7 +111,7 @@ export function getEntriesByDateRange(entries, startDate, endDate) {
  * @returns {array} - Filtered entries
  */
 export function getEntriesBySubstance(entries, substanceId) {
-  return entries.filter(entry => entry.substanceId === substanceId);
+  return entries.filter((entry) => entry.substanceId === substanceId);
 }
 
 /**
@@ -121,7 +121,7 @@ export function getEntriesBySubstance(entries, substanceId) {
  * @returns {array} - Filtered entries
  */
 export function getEntriesByPerson(entries, person) {
-  return entries.filter(entry => entry.person === person);
+  return entries.filter((entry) => entry.person === person);
 }
 
 /**
@@ -130,7 +130,7 @@ export function getEntriesByPerson(entries, person) {
  * @returns {array} - Unique person names
  */
 export function getUniquePeople(entries) {
-  return [...new Set(entries.map(e => e.person))].sort();
+  return [...new Set(entries.map((e) => e.person))].sort();
 }
 
 /**
@@ -141,7 +141,7 @@ export function getUniquePeople(entries) {
  */
 export function getSubstanceStats(substance, entries) {
   const substanceEntries = getEntriesBySubstance(entries, substance.id);
-  const deltas = substanceEntries.map(e => e.delta);
+  const deltas = substanceEntries.map((e) => e.delta);
   const totalUsed = deltas.reduce((sum, d) => sum + d, 0);
   const remaining = getSubstanceRemaining(substance, entries);
 
@@ -149,12 +149,9 @@ export function getSubstanceStats(substance, entries) {
     totalEntries: substanceEntries.length,
     totalUsed: Number(totalUsed.toFixed(2)),
     remaining: remaining,
-    averageUsage: substanceEntries.length > 0
-      ? Number((totalUsed / substanceEntries.length).toFixed(2))
-      : 0,
-    lastEntry: substanceEntries.length > 0
-      ? substanceEntries[substanceEntries.length - 1]
-      : null,
+    averageUsage:
+      substanceEntries.length > 0 ? Number((totalUsed / substanceEntries.length).toFixed(2)) : 0,
+    lastEntry: substanceEntries.length > 0 ? substanceEntries[substanceEntries.length - 1] : null,
   };
 }
 
@@ -171,8 +168,8 @@ export function getUsageRate(substance, entries) {
     return 0;
   }
 
-  const sortedEntries = substanceEntries.sort((a, b) =>
-    new Date(a.timestamp) - new Date(b.timestamp)
+  const sortedEntries = substanceEntries.sort(
+    (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
   );
 
   const firstEntry = new Date(sortedEntries[0].timestamp);
@@ -222,4 +219,212 @@ export function getProjectedDepletion(substance, entries) {
     daysRemaining: daysRemaining,
     depleted: false,
   };
+}
+
+/**
+ * Get entries filtered by person
+ * @param {array} entries - All entries
+ * @param {string} person - Person identifier
+ * @returns {array} - Filtered and sorted entries
+ */
+export function getPersonEntries(entries, person) {
+  return entries
+    .filter((e) => e.person === person)
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+}
+
+/**
+ * Get overall usage statistics for a person
+ * @param {array} entries - All entries
+ * @param {string} person - Person identifier
+ * @returns {object} - Overall stats { totalMass, totalSessions, dateRange, massPerDay, sessionsPerDay }
+ */
+export function getOverallStats(entries, person) {
+  const personEntries = getPersonEntries(entries, person);
+
+  if (personEntries.length === 0) {
+    return {
+      totalMass: 0,
+      totalSessions: 0,
+      dateRange: { first: null, last: null, days: 0 },
+      massPerDay: 0,
+      sessionsPerDay: 0,
+    };
+  }
+
+  const totalMass = personEntries.reduce((sum, e) => sum + e.delta, 0);
+  const totalSessions = personEntries.length;
+
+  const firstEntry = new Date(personEntries[0].timestamp);
+  const lastEntry = new Date(personEntries[personEntries.length - 1].timestamp);
+  const daysDiff = Math.max(1, (lastEntry - firstEntry) / (1000 * 60 * 60 * 24));
+
+  return {
+    totalMass: Number(totalMass.toFixed(2)),
+    totalSessions,
+    dateRange: {
+      first: firstEntry,
+      last: lastEntry,
+      days: Math.ceil(daysDiff),
+    },
+    massPerDay: Number((totalMass / daysDiff).toFixed(2)),
+    sessionsPerDay: Number((totalSessions / daysDiff).toFixed(1)),
+  };
+}
+
+/**
+ * Get per-substance usage statistics for a person
+ * @param {array} entries - All entries
+ * @param {string} person - Person identifier
+ * @param {array} substances - All substances
+ * @returns {array} - Array of substance stats
+ */
+export function getPerSubstanceStats(entries, person, substances) {
+  const personEntries = getPersonEntries(entries, person);
+
+  return substances
+    .filter((s) => s.active)
+    .map((substance) => {
+      const substanceEntries = personEntries.filter((e) => e.substanceId === substance.id);
+
+      if (substanceEntries.length === 0) {
+        return {
+          substance,
+          totalMass: 0,
+          sessions: 0,
+          massPerDay: 0,
+          sessionsPerDay: 0,
+        };
+      }
+
+      const totalMass = substanceEntries.reduce((sum, e) => sum + e.delta, 0);
+      const firstEntry = new Date(substanceEntries[0].timestamp);
+      const lastEntry = new Date(substanceEntries[substanceEntries.length - 1].timestamp);
+      const daysDiff = Math.max(1, (lastEntry - firstEntry) / (1000 * 60 * 60 * 24));
+
+      return {
+        substance,
+        totalMass: Number(totalMass.toFixed(2)),
+        sessions: substanceEntries.length,
+        massPerDay: Number((totalMass / daysDiff).toFixed(2)),
+        sessionsPerDay: Number((substanceEntries.length / daysDiff).toFixed(1)),
+      };
+    })
+    .sort((a, b) => b.totalMass - a.totalMass);
+}
+
+/**
+ * Get weekly comparison for a person (current week vs previous week)
+ * @param {array} entries - All entries
+ * @param {string} person - Person identifier
+ * @returns {object} - Weekly comparison { current, previous, change }
+ */
+export function getWeeklyComparison(entries, person) {
+  const personEntries = getPersonEntries(entries, person);
+
+  const now = new Date();
+  const currentWeekStart = new Date(now);
+  currentWeekStart.setDate(now.getDate() - now.getDay());
+  currentWeekStart.setHours(0, 0, 0, 0);
+
+  const previousWeekStart = new Date(currentWeekStart);
+  previousWeekStart.setDate(currentWeekStart.getDate() - 7);
+
+  const currentWeekEntries = personEntries.filter((e) => {
+    const entryDate = new Date(e.timestamp);
+    return entryDate >= currentWeekStart;
+  });
+
+  const previousWeekEntries = personEntries.filter((e) => {
+    const entryDate = new Date(e.timestamp);
+    return entryDate >= previousWeekStart && entryDate < currentWeekStart;
+  });
+
+  const currentMass = currentWeekEntries.reduce((sum, e) => sum + e.delta, 0);
+  const previousMass = previousWeekEntries.reduce((sum, e) => sum + e.delta, 0);
+
+  const massChange = previousMass > 0 ? ((currentMass - previousMass) / previousMass) * 100 : 0;
+
+  const sessionsChange =
+    previousWeekEntries.length > 0
+      ? ((currentWeekEntries.length - previousWeekEntries.length) / previousWeekEntries.length) *
+        100
+      : 0;
+
+  return {
+    current: {
+      mass: Number(currentMass.toFixed(2)),
+      sessions: currentWeekEntries.length,
+      dateRange: { start: currentWeekStart, end: now },
+    },
+    previous: {
+      mass: Number(previousMass.toFixed(2)),
+      sessions: previousWeekEntries.length,
+      dateRange: { start: previousWeekStart, end: currentWeekStart },
+    },
+    change: {
+      mass: Number(massChange.toFixed(1)),
+      sessions: Number(sessionsChange.toFixed(1)),
+    },
+  };
+}
+
+/**
+ * Get usage breakdown by day of week for a person
+ * @param {array} entries - All entries
+ * @param {string} person - Person identifier
+ * @returns {array} - Array of 7 objects (Mon-Sun) with avg mass and sessions
+ */
+export function getDayOfWeekBreakdown(entries, person) {
+  const personEntries = getPersonEntries(entries, person);
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayData = Array(7)
+    .fill(null)
+    .map((_, i) => ({
+      day: dayNames[i],
+      totalMass: 0,
+      totalSessions: 0,
+      occurrences: 0,
+    }));
+
+  personEntries.forEach((entry) => {
+    const dayOfWeek = new Date(entry.timestamp).getDay();
+    dayData[dayOfWeek].totalMass += entry.delta;
+    dayData[dayOfWeek].totalSessions += 1;
+    dayData[dayOfWeek].occurrences += 1;
+  });
+
+  return dayData.map((d) => ({
+    day: d.day,
+    avgMass: d.occurrences > 0 ? Number((d.totalMass / d.occurrences).toFixed(2)) : 0,
+    avgSessions: d.occurrences > 0 ? Number((d.totalSessions / d.occurrences).toFixed(1)) : 0,
+  }));
+}
+
+/**
+ * Get mass distribution for a substance (t, e, remaining)
+ * @param {object} substance - Substance object
+ * @param {array} entries - All entries
+ * @returns {array} - Array of 3 objects for pie chart segments
+ */
+export function getSubstanceMassDistribution(substance, entries) {
+  const substanceEntries = entries.filter((e) => e.substanceId === substance.id);
+
+  const tMass = substanceEntries
+    .filter((e) => e.person === 't')
+    .reduce((sum, e) => sum + e.delta, 0);
+
+  const eMass = substanceEntries
+    .filter((e) => e.person === 'e')
+    .reduce((sum, e) => sum + e.delta, 0);
+
+  const totalUsed = tMass + eMass;
+  const remaining = Math.max(0, substance.theoreticalInitialMass - totalUsed);
+
+  return [
+    { name: 't', value: Number(tMass.toFixed(2)), fill: '#2E6F40' },
+    { name: 'e', value: Number(eMass.toFixed(2)), fill: '#3b82f6' },
+    { name: 'Remaining', value: Number(remaining.toFixed(2)), fill: '#475569' },
+  ];
 }

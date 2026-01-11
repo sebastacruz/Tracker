@@ -326,7 +326,11 @@ export default function SubstanceManager() {
                     <div className="flex justify-between text-slate-300">
                       <span>Actual Used:</span>
                       <span className="font-mono font-bold text-purple-400">
-                        {(substance.theoreticalInitialMass - substance.finalMass).toFixed(2)}g
+                        {(
+                          (substance.totalInitialMass || substance.theoreticalInitialMass) -
+                          substance.finalMass
+                        ).toFixed(2)}
+                        g
                       </span>
                     </div>
                   )}
@@ -397,6 +401,7 @@ export default function SubstanceManager() {
         onCancel={handleFinishCancel}
         substanceName={substanceToFinish?.name || ''}
         theoreticalInitialMass={substanceToFinish?.theoreticalInitialMass || 0}
+        totalInitialMass={substanceToFinish?.totalInitialMass || null}
       />
     </div>
   );

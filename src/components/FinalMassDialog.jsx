@@ -9,6 +9,7 @@ export default function FinalMassDialog({
   onCancel,
   substanceName,
   theoreticalInitialMass,
+  totalInitialMass,
 }) {
   const [finalMass, setFinalMass] = useState('');
   const [error, setError] = useState('');
@@ -33,6 +34,7 @@ export default function FinalMassDialog({
     setError('');
 
     const finalMassNum = parseFloat(finalMass);
+    const referenceMass = totalInitialMass || theoreticalInitialMass;
 
     if (!finalMass || isNaN(finalMassNum)) {
       setError('Please enter a valid final mass');
@@ -44,8 +46,8 @@ export default function FinalMassDialog({
       return;
     }
 
-    if (finalMassNum > theoreticalInitialMass) {
-      setError('Final mass cannot exceed initial mass');
+    if (finalMassNum > referenceMass) {
+      setError(`Final mass cannot exceed ${referenceMass}g (initial mass)`);
       return;
     }
 
@@ -93,7 +95,15 @@ export default function FinalMassDialog({
                 className="input-base w-full"
                 autoFocus
               />
-              <p className="text-xs text-slate-400 mt-1">Initial mass: {theoreticalInitialMass}g</p>
+              <p className="text-xs text-slate-400 mt-1">
+                {totalInitialMass ? (
+                  <>
+                    Total purchased: {totalInitialMass}g | In use: {theoreticalInitialMass}g
+                  </>
+                ) : (
+                  <>Initial mass: {theoreticalInitialMass}g</>
+                )}
+              </p>
             </div>
 
             {error && (
@@ -102,13 +112,16 @@ export default function FinalMassDialog({
               </div>
             )}
 
-            {finalMass && !error && (
+            {finalMass && !error && parseFloat(finalMass) >= 0 && (
               <div className="p-3 bg-blue-900/50 border border-blue-700 rounded-lg text-blue-200 text-sm">
                 <p className="font-semibold mb-1">Calculated Usage:</p>
                 <p>
                   Actual mass used:{' '}
                   <span className="font-mono font-bold">
-                    {(theoreticalInitialMass - parseFloat(finalMass)).toFixed(2)}g
+                    {((totalInitialMass || theoreticalInitialMass) - parseFloat(finalMass)).toFixed(
+                      2
+                    )}
+                    g
                   </span>
                 </p>
               </div>

@@ -77,9 +77,8 @@ export function getActualMassUsed(substance, entries) {
   const usedFromEntries = substanceEntries.reduce((sum, e) => sum + (e.delta || 0), 0);
 
   const hasFinalMass = substance.finalMass !== null && substance.finalMass !== undefined;
-  const actualMassUsed = hasFinalMass
-    ? substance.theoreticalInitialMass - substance.finalMass
-    : usedFromEntries;
+  const referenceMass = substance.totalInitialMass || substance.theoreticalInitialMass;
+  const actualMassUsed = hasFinalMass ? referenceMass - substance.finalMass : usedFromEntries;
 
   const avgDabMass = substanceEntries.length > 0 ? actualMassUsed / substanceEntries.length : 0;
 

@@ -8,6 +8,92 @@
 
 ---
 
+## Phase 9: Final Mass Recording (v1.3.0 - Unreleased)
+
+### January 11, 2026
+
+#### Final Mass Functionality ✅
+**Goal**: Enable recording of actual final mass when finishing flavors for precise usage calculations and average dab mass metrics.
+
+**Implementation Summary**:
+Added complete final mass recording system with FinalMassDialog modal, updated calculations to support dual-mass tracking (totalInitialMass for purchases, theoreticalInitialMass for container tracking), and enhanced Dashboard/SubstanceManager to display actual usage vs theoretical usage.
+
+**Changes Made**:
+
+1. **Data Schema Updates** ([useSubstances.js](src/hooks/useSubstances.js:27))
+   - Added `finalMass` field to substance schema (initially `null`)
+   - Updated `deactivateSubstance(id, finalMass)` to accept optional finalMass parameter
+   - Final mass stored when flavor marked as finished
+
+2. **FinalMassDialog Component** ([FinalMassDialog.jsx](src/components/FinalMassDialog.jsx))
+   - Modal captures final mass when "Finish Flavor" clicked
+   - **Validation Logic**: Uses `referenceMass = totalInitialMass || theoreticalInitialMass`
+   - Real-time calculation preview: Shows `actualMassUsed = referenceMass - finalMass`
+   - Displays both masses when totalInitialMass exists: "Total purchased: 3.5g | In use: 1g"
+   - Input validation: Cannot be negative, cannot exceed reference mass
+   - "Skip" button option to finish without recording final mass
+
+3. **Calculation Updates** ([calculations.js](src/utils/calculations.js:75-92))
+   - **New Function**: `getActualMassUsed(substance, entries)`
+     - Uses `referenceMass = substance.totalInitialMass || substance.theoreticalInitialMass`
+     - Calculates: `actualMassUsed = referenceMass - finalMass` (when finalMass exists)
+     - Computes: `avgDabMass = actualMassUsed / sessionCount` (4 decimal precision)
+     - Returns: actualMassUsed, avgDabMass, usedFromEntries, hasFinalMass, sessionCount
+   - **Updated**: `getPerSubstanceStats(entries, person, substances, includeInactive)`
+     - Added `includeInactive` parameter (default: false)
+     - Includes `actualMassUsed` and `avgDabMass` in returned stats
+     - Supports inactive flavors in analytics
+
+4. **Dashboard Enhancements** ([Dashboard.jsx](src/components/Dashboard.jsx))
+   - Added "Show inactive flavors" checkbox toggle (line 355-365)
+   - Inactive flavors selectable for charts with "(Inactive)" label
+   - **Enhanced Stats Table**:
+     - New "Avg/Dab" column showing average mass per session
+     - Displays actual mass with asterisk (*) when finalMass recorded
+     - Hover tooltip shows entry-based mass for comparison
+     - Footer note: "* Actual mass used (calculated from final mass)"
+   - `getPerSubstanceStats()` called with `includeInactive=true`
+
+5. **SubstanceManager Updates** ([SubstanceManager.jsx](src/components/SubstanceManager.jsx))
+   - Integrated FinalMassDialog on "Finish" button click
+   - Passes `totalInitialMass` to dialog for correct validation
+   - Displays final mass for inactive flavors (amber highlight)
+   - Shows both "Used (from entries)" and "Actual Used" calculations
+   - Actual Used calculation: `(totalInitialMass || theoreticalInitialMass) - finalMass`
+
+**Technical Details**:
+
+```javascript
+// Validation uses correct reference mass
+const referenceMass = totalInitialMass || theoreticalInitialMass;
+if (finalMassNum > referenceMass) {
+  setError(`Final mass cannot exceed ${referenceMass}g (initial mass)`);
+  return;
+}
+
+// Actual mass calculation
+const hasFinalMass = substance.finalMass !== null && substance.finalMass !== undefined;
+const referenceMass = substance.totalInitialMass || substance.theoreticalInitialMass;
+const actualMassUsed = hasFinalMass ? referenceMass - substance.finalMass : usedFromEntries;
+const avgDabMass = substanceEntries.length > 0 ? actualMassUsed / substanceEntries.length : 0;
+```
+
+**Bug Fix** (January 11, 2026):
+- **Issue**: Validation was comparing finalMass against theoreticalInitialMass, causing errors when totalInitialMass > theoreticalInitialMass
+- **Example**: Flavor with 3.5g total purchased, 1g in container → finalMass 0.5g was rejected (0.5g > 1g check failed)
+- **Fix**: Changed validation and calculations to use `referenceMass = totalInitialMass || theoreticalInitialMass`
+- **Result**: Validation now correct (0.5g < 3.5g), calculations use proper reference mass
+
+**User Experience**:
+- Clear modal workflow for finishing flavors with final mass recording
+- Real-time calculation preview shows expected results before confirming
+- Option to skip if final mass not measured (maintains flexibility)
+- Dashboard shows actual vs theoretical usage for finished flavors
+- Inactive flavors remain accessible for historical analysis
+- Average dab mass provides precise per-session consumption metrics
+
+---
+
 ## Phase 8: UI Simplification (v1.3.0 - Unreleased)
 
 ### January 8, 2026

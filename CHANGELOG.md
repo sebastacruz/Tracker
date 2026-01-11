@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Final Mass Recording (2026-01-11)**: Complete lifecycle tracking with actual usage calculations
+  - FinalMassDialog modal to capture final mass when finishing flavors
+  - Validates against totalInitialMass (if set) or theoreticalInitialMass
+  - Real-time calculation preview showing actual mass used
+  - Option to skip final mass recording if not measured
+  - Average dab mass calculation: actualMassUsed / sessionCount (4 decimal precision)
+  - Dashboard "Show inactive flavors" toggle for historical analysis
+  - Enhanced stats table with "Avg/Dab" column showing per-session usage
+  - Actual mass used displayed with asterisk when finalMass recorded
+  - SubstanceManager displays final mass for inactive flavors (amber highlight)
+  - Supports both totalInitialMass (full purchase) and theoreticalInitialMass (in container)
 - **Flavor Lifecycle Management (2026-01-10)**: Complete flavor deactivation system
   - "Finish Flavor" button in SubstanceManager for manual closeout
   - Active/Inactive filtering tabs to organize flavors by status

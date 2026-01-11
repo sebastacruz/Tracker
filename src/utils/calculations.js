@@ -77,6 +77,11 @@ export function getActualMassUsed(substance, entries) {
   const usedFromEntries = substanceEntries.reduce((sum, e) => sum + (e.delta || 0), 0);
 
   const hasFinalMass = substance.finalMass !== null && substance.finalMass !== undefined;
+
+  // CRITICAL: When calculating actual usage with finalMass, we must use the correct reference:
+  // - If totalInitialMass exists, finalMass represents the total remaining (use totalInitialMass as reference)
+  // - If only theoreticalInitialMass exists, finalMass represents what's in the container (use theoreticalInitialMass)
+  // This ensures we're always comparing apples to apples and prevents negative usage values
   const referenceMass = substance.totalInitialMass || substance.theoreticalInitialMass;
   const actualMassUsed = hasFinalMass ? referenceMass - substance.finalMass : usedFromEntries;
 

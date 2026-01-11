@@ -2,6 +2,7 @@
  * FinalMassDialog - Modal to capture final mass when finishing a flavor
  */
 import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 
 export default function FinalMassDialog({
   isOpen,
@@ -77,12 +78,27 @@ export default function FinalMassDialog({
         {/* Content */}
         <form onSubmit={handleSubmit}>
           <div className="px-6 py-4 space-y-4">
-            <p className="text-slate-300">
-              Enter the final mass to calculate actual usage and average dab mass.
-            </p>
+            {totalInitialMass ? (
+              <div className="p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                <p className="text-blue-200 text-sm font-semibold mb-2">
+                  ⚠️ Important: Enter TOTAL remaining mass
+                </p>
+                <p className="text-blue-300/90 text-xs">
+                  Include what&apos;s in the jar AND what&apos;s stored. This should be measured
+                  against your original <strong>{totalInitialMass}g total purchase</strong>, not
+                  just the {theoreticalInitialMass}g that was in use.
+                </p>
+              </div>
+            ) : (
+              <p className="text-slate-300">
+                Enter the final remaining mass to calculate actual usage and average dab mass.
+              </p>
+            )}
 
             <div>
-              <label className="label-base">Final Mass (g)</label>
+              <label className="label-base">
+                {totalInitialMass ? 'Total Final Mass (g)' : 'Final Mass (g)'}
+              </label>
               <input
                 type="number"
                 step="0.01"
@@ -91,17 +107,22 @@ export default function FinalMassDialog({
                   setFinalMass(e.target.value);
                   setError('');
                 }}
-                placeholder="e.g., 2.5"
+                placeholder={
+                  totalInitialMass ? `Max: ${totalInitialMass}g` : `Max: ${theoreticalInitialMass}g`
+                }
                 className="input-base w-full"
                 autoFocus
               />
               <p className="text-xs text-slate-400 mt-1">
                 {totalInitialMass ? (
                   <>
-                    Total purchased: {totalInitialMass}g | In use: {theoreticalInitialMass}g
+                    <strong>Reference:</strong> {totalInitialMass}g total purchased |{' '}
+                    {theoreticalInitialMass}g was in use
                   </>
                 ) : (
-                  <>Initial mass: {theoreticalInitialMass}g</>
+                  <>
+                    <strong>Reference:</strong> {theoreticalInitialMass}g initial mass
+                  </>
                 )}
               </p>
             </div>
@@ -158,3 +179,12 @@ export default function FinalMassDialog({
     </div>
   );
 }
+
+FinalMassDialog.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  substanceName: PropTypes.string.isRequired,
+  theoreticalInitialMass: PropTypes.number.isRequired,
+  totalInitialMass: PropTypes.number,
+};

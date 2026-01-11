@@ -10,12 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Flavor Lifecycle Management (2026-01-10)**: Complete flavor deactivation system
+  - "Finish Flavor" button in SubstanceManager for manual closeout
+  - Active/Inactive filtering tabs to organize flavors by status
+  - "Reactivate" button to bring back finished flavors
+  - Inactive flavors hidden from QuickEntry dropdown
+  - Full history and analytics preserved for inactive flavors
+  - Supports overconsumption tracking until final closeout
 - **Personal Stats Dashboard (2026-01-08)**: Complete redesign focused on user "t" analytics
   - Overall Summary Card: Mass/day, sessions/day, total tracking days
   - Weekly Comparison: Current week vs previous week with percentage changes
   - Per-Flavor Breakdown Table: Total usage, sessions, and daily rates per flavor
-  - Day of Week Chart: Bar chart showing average usage patterns (Sun-Sat)
-  - Mass Distribution Pie Charts: Visual breakdown per flavor (t, e, remaining segments)
+  - Mass Distribution Pie Charts: Visual breakdown per flavor with enhanced mobile labels
   - Consumption Timeline: Line chart filtered to show only user "t" data
   - Six new calculation functions for comprehensive personal analytics
   - Auto-recalculation on data changes with useMemo optimization
@@ -43,11 +49,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Confirm/Cancel actions with clear buttons
 
 ### Changed
+- **View Persistence (2026-01-10)**: Current page now persists across refreshes
+  - localStorage saves active view when navigating
+  - Refresh buttons maintain current page instead of resetting to Entry
+  - Improves UX when refreshing Dashboard or History
+- **Pie Chart Labels (2026-01-10)**: Mobile-optimized label positioning
+  - Labels positioned outside pie slices for better legibility
+  - Custom renderLabel function with dynamic positioning
+  - One pie per row on mobile (390px viewport)
+  - Increased chart height (200px) and spacing (gap-8)
+  - Larger font (13px) with high contrast (#e2e8f0)
+  - Format: "name: percent%" (e.g., "t: 11%")
+  - Tested with Playwright iPhone Safari emulation
 - **Navigation System**: Settings accessible via swipe (5 pages total: Entry → Dashboard → History → Flavors → Settings)
 - **Button Interactions**: Selected buttons show emerald-500 border and emerald-500/20 background
 - **Navbar Simplified**: Now just spacing element (maintains layout consistency)
 
 ### Removed
+- **Day of Week Chart (2026-01-10)**: Removed "Usage by Day of Week" bar chart from Dashboard
+  - Simplified analytics view
+  - Cleaned up unused BarChart/Bar imports
+  - Removed dayOfWeekData useMemo calculation
 - Dropdown menus throughout app (replaced with button grids)
 - Settings modal/overlay functionality
 - Settings gear icon from navbar

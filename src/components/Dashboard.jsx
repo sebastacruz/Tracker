@@ -5,8 +5,6 @@ import { useState, useMemo } from 'react';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -21,7 +19,6 @@ import {
   getOverallStats,
   getPerSubstanceStats,
   getWeeklyComparison,
-  getDayOfWeekBreakdown,
   getSubstanceMassDistribution,
   formatTimestamp,
 } from '../utils/calculations';
@@ -50,8 +47,6 @@ export default function Dashboard({ substances, entries }) {
   );
 
   const weeklyComparison = useMemo(() => getWeeklyComparison(entries, 't'), [entries]);
-
-  const dayOfWeekData = useMemo(() => getDayOfWeekBreakdown(entries, 't'), [entries]);
 
   const pieChartsData = useMemo(() => {
     return substances
@@ -103,6 +98,29 @@ export default function Dashboard({ substances, entries }) {
 
     return Object.values(timeMap).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   }, [selectedSubstances, entries, substances]);
+
+  const renderPieLabel = ({ cx, cy, midAngle, outerRadius, name, percent }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 25;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    if (percent < 0.05) return null;
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#e2e8f0"
+        fontSize={13}
+        fontWeight="500"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   if (substances.length === 0) {
     return (
@@ -273,36 +291,14 @@ export default function Dashboard({ substances, entries }) {
         </div>
       )}
 
-      {/* Day of Week Chart */}
-      <div className="card mb-6">
-        <h3 className="text-lg font-bold mb-4">Your Usage by Day of Week</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={dayOfWeekData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="day" stroke="#94a3b8" style={{ fontSize: '12px' }} />
-            <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#1A1A1A',
-                border: '1px solid #303030',
-                borderRadius: '8px',
-              }}
-              labelStyle={{ color: '#e2e8f0' }}
-            />
-            <Legend />
-            <Bar dataKey="avgMass" fill="#2E6F40" name="Avg Mass (g)" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
       {/* Mass Distribution Pie Charts */}
       <div className="card mb-6">
         <h3 className="text-lg font-bold mb-4">Mass Distribution by Flavor</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {pieChartsData.map(({ substance, distribution }) => (
             <div key={substance.id} className="flex flex-col items-center">
               <p className="text-sm font-medium text-slate-300 mb-2">{substance.name}</p>
-              <ResponsiveContainer width="100%" height={150}>
+              <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
                     data={distribution}
@@ -311,9 +307,7 @@ export default function Dashboard({ substances, entries }) {
                     cx="50%"
                     cy="50%"
                     outerRadius={50}
-                    label={({ name, percent }) =>
-                      percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''
-                    }
+                    label={renderPieLabel}
                     labelLine={false}
                   >
                     {distribution.map((entry, index) => (

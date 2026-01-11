@@ -13,7 +13,8 @@ import { useEntries } from '../hooks/useEntries';
 import { getSubstanceRemaining, getUsageRate, getProjectedDepletion } from '../utils/calculations';
 
 export default function SubstanceManager() {
-  const { substances, addSubstance, deleteSubstance } = useSubstances();
+  const { substances, addSubstance, deleteSubstance, deactivateSubstance, reactivateSubstance } =
+    useSubstances();
   const { entries, getEntriesBySubstance } = useEntries();
 
   const [showForm, setShowForm] = useState(false);
@@ -22,6 +23,7 @@ export default function SubstanceManager() {
   const [totalInitialMass, setTotalInitialMass] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [filterActive, setFilterActive] = useState(true);
 
   const handleAddSubstance = (e) => {
     e.preventDefault();
@@ -62,11 +64,59 @@ export default function SubstanceManager() {
     }
   };
 
+  const handleFinishFlavor = (substance) => {
+    if (
+      window.confirm(
+        `Mark "${substance.name}" as finished? It will be hidden from Quick Entry but remain in history.`
+      )
+    ) {
+      deactivateSubstance(substance.id);
+      setSuccess(`"${substance.name}" has been finished and moved to inactive.`);
+      setTimeout(() => {
+        setSuccess('');
+      }, 5000);
+    }
+  };
+
+  const handleReactivate = (substance) => {
+    reactivateSubstance(substance.id);
+    setSuccess(`"${substance.name}" has been reactivated!`);
+    setTimeout(() => {
+      setSuccess('');
+    }, 5000);
+  };
+
+  const filteredSubstances = substances.filter((s) => s.active === filterActive);
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       {/* Header */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold mb-2">Flavors</h2>
+      </div>
+
+      {/* Active/Inactive Tabs */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setFilterActive(true)}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filterActive
+              ? 'bg-emerald-600 text-white'
+              : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+          }`}
+        >
+          Active ({substances.filter((s) => s.active).length})
+        </button>
+        <button
+          onClick={() => setFilterActive(false)}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            !filterActive
+              ? 'bg-emerald-600 text-white'
+              : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+          }`}
+        >
+          Inactive ({substances.filter((s) => !s.active).length})
+        </button>
       </div>
 
       {/* Success Message */}
@@ -161,14 +211,20 @@ export default function SubstanceManager() {
       )}
 
       {/* Flavors List */}
-      {substances.length === 0 ? (
+      {filteredSubstances.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-slate-400 text-lg">No flavors yet</p>
-          <p className="text-slate-500 text-sm mt-2">Add your first flavor to get started</p>
+          <p className="text-slate-400 text-lg">
+            {filterActive ? 'No active flavors' : 'No inactive flavors'}
+          </p>
+          <p className="text-slate-500 text-sm mt-2">
+            {filterActive
+              ? 'Add your first flavor to get started'
+              : 'Finished flavors will appear here'}
+          </p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {substances.map((substance) => {
+          {filteredSubstances.map((substance) => {
             const substanceEntries = getEntriesBySubstance(substance.id);
             const remaining = getSubstanceRemaining(substance, entries);
             const usageRate = getUsageRate(substance, entries);
@@ -180,12 +236,39 @@ export default function SubstanceManager() {
               <div key={substance.id} className="card">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-lg font-bold">{substance.name}</h3>
-                  <button
-                    onClick={() => deleteSubstance(substance.id)}
-                    className="text-red-400 hover:text-red-300 text-sm font-medium"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+                    {substance.active ? (
+                      <>
+                        <button
+                          onClick={() => handleFinishFlavor(substance)}
+                          className="text-slate-400 hover:text-slate-300 text-sm font-medium"
+                        >
+                          Finish
+                        </button>
+                        <button
+                          onClick={() => deleteSubstance(substance.id)}
+                          className="text-red-400 hover:text-red-300 text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleReactivate(substance)}
+                          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+                        >
+                          Reactivate
+                        </button>
+                        <button
+                          onClick={() => deleteSubstance(substance.id)}
+                          className="text-red-400 hover:text-red-300 text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {/* Stats */}

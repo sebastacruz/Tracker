@@ -58,6 +58,24 @@ export function useSubstances() {
     }
   }, []);
 
+  const deactivateSubstance = useCallback((id) => {
+    setSubstances((prev) => {
+      const updated = prev.map((s) => (s.id === id ? { ...s, active: false } : s));
+      const data = getData();
+      saveData({ ...data, substances: updated });
+      return updated;
+    });
+  }, []);
+
+  const reactivateSubstance = useCallback((id) => {
+    setSubstances((prev) => {
+      const updated = prev.map((s) => (s.id === id ? { ...s, active: true } : s));
+      const data = getData();
+      saveData({ ...data, substances: updated });
+      return updated;
+    });
+  }, []);
+
   const getSubstanceById = useCallback(
     (id) => {
       return substances.find((s) => s.id === id);
@@ -70,6 +88,8 @@ export function useSubstances() {
     addSubstance,
     updateSubstance,
     deleteSubstance,
+    deactivateSubstance,
+    reactivateSubstance,
     getSubstanceById,
   };
 }

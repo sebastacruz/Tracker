@@ -1,7 +1,7 @@
 /**
  * App.jsx - Main application component with swipe navigation
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import QuickEntry from './components/QuickEntry';
 import Dashboard from './components/Dashboard';
@@ -16,7 +16,13 @@ import { useEntries } from './hooks/useEntries';
 export default function App() {
   const { substances } = useSubstances();
   const { entries } = useEntries();
-  const [currentView, setCurrentView] = useState('entry');
+  const [currentView, setCurrentView] = useState(() => {
+    return localStorage.getItem('tracker_currentView') || 'entry';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tracker_currentView', currentView);
+  }, [currentView]);
 
   return (
     <div className="min-h-screen bg-primary text-primary flex flex-col">

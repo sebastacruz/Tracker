@@ -24,6 +24,7 @@ export function useSubstances() {
       name: name.trim(),
       theoreticalInitialMass: Number(theoreticalInitialMass),
       totalInitialMass: totalInitialMass ? Number(totalInitialMass) : null,
+      finalMass: null,
       createdAt: new Date().toISOString(),
       active: true,
     };
@@ -58,9 +59,13 @@ export function useSubstances() {
     }
   }, []);
 
-  const deactivateSubstance = useCallback((id) => {
+  const deactivateSubstance = useCallback((id, finalMass = null) => {
     setSubstances((prev) => {
-      const updated = prev.map((s) => (s.id === id ? { ...s, active: false } : s));
+      const updated = prev.map((s) =>
+        s.id === id
+          ? { ...s, active: false, finalMass: finalMass !== null ? Number(finalMass) : null }
+          : s
+      );
       const data = getData();
       saveData({ ...data, substances: updated });
       return updated;

@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useSubstances } from '../hooks/useSubstances';
 import { useEntries } from '../hooks/useEntries';
 import { getSubstanceRemaining, getUsageRate, getProjectedDepletion } from '../utils/calculations';
+import FinalMassDialog from './FinalMassDialog';
 
 export default function SubstanceManager() {
   const { substances, addSubstance, deleteSubstance, deactivateSubstance, reactivateSubstance } =
@@ -24,6 +25,8 @@ export default function SubstanceManager() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [filterActive, setFilterActive] = useState(true);
+  const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+  const [substanceToFinish, setSubstanceToFinish] = useState(null);
 
   const handleAddSubstance = (e) => {
     e.preventDefault();
@@ -65,17 +68,29 @@ export default function SubstanceManager() {
   };
 
   const handleFinishFlavor = (substance) => {
-    if (
-      window.confirm(
-        `Mark "${substance.name}" as finished? It will be hidden from Quick Entry but remain in history.`
-      )
-    ) {
-      deactivateSubstance(substance.id);
-      setSuccess(`"${substance.name}" has been finished and moved to inactive.`);
+    setSubstanceToFinish(substance);
+    setFinishDialogOpen(true);
+  };
+
+  const handleFinishConfirm = (finalMass) => {
+    if (substanceToFinish) {
+      deactivateSubstance(substanceToFinish.id, finalMass);
+      setSuccess(
+        `"${substanceToFinish.name}" has been finished and moved to inactive.${
+          finalMass !== null ? ` Final mass recorded: ${finalMass}g` : ''
+        }`
+      );
       setTimeout(() => {
         setSuccess('');
       }, 5000);
     }
+    setFinishDialogOpen(false);
+    setSubstanceToFinish(null);
+  };
+
+  const handleFinishCancel = () => {
+    setFinishDialogOpen(false);
+    setSubstanceToFinish(null);
   };
 
   const handleReactivate = (substance) => {
@@ -285,6 +300,14 @@ export default function SubstanceManager() {
                     <span>Initial (Theoretical):</span>
                     <span className="font-mono">{substance.theoreticalInitialMass}g</span>
                   </div>
+                  {substance.finalMass !== null && substance.finalMass !== undefined && (
+                    <div className="flex justify-between text-slate-300">
+                      <span>Final Mass:</span>
+                      <span className="font-mono font-bold text-amber-400">
+                        {substance.finalMass}g
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-slate-300">
                     <span>Remaining:</span>
                     <span
@@ -294,11 +317,19 @@ export default function SubstanceManager() {
                     </span>
                   </div>
                   <div className="flex justify-between text-slate-300">
-                    <span>Used:</span>
+                    <span>Used (from entries):</span>
                     <span className="font-mono">
                       {(substance.theoreticalInitialMass - remaining).toFixed(2)}g
                     </span>
                   </div>
+                  {substance.finalMass !== null && substance.finalMass !== undefined && (
+                    <div className="flex justify-between text-slate-300">
+                      <span>Actual Used:</span>
+                      <span className="font-mono font-bold text-purple-400">
+                        {(substance.theoreticalInitialMass - substance.finalMass).toFixed(2)}g
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-slate-300">
                     <span>Entries:</span>
                     <span className="font-mono">{substanceEntries.length}</span>
@@ -358,6 +389,15 @@ export default function SubstanceManager() {
           })}
         </div>
       )}
+
+      {/* Final Mass Dialog */}
+      <FinalMassDialog
+        isOpen={finishDialogOpen}
+        onConfirm={handleFinishConfirm}
+        onCancel={handleFinishCancel}
+        substanceName={substanceToFinish?.name || ''}
+        theoreticalInitialMass={substanceToFinish?.theoreticalInitialMass || 0}
+      />
     </div>
   );
 }

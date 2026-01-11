@@ -31,6 +31,7 @@ export default function Dashboard({ substances, entries }) {
     return activeSubstances.length > 0 ? [activeSubstances[0].id] : [];
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
 
   // Refresh handler
   const handleRefresh = () => {
@@ -42,7 +43,7 @@ export default function Dashboard({ substances, entries }) {
   const overallStats = useMemo(() => getOverallStats(entries, 't'), [entries]);
 
   const substanceStats = useMemo(
-    () => getPerSubstanceStats(entries, 't', substances),
+    () => getPerSubstanceStats(entries, 't', substances, true),
     [entries, substances]
   );
 
@@ -263,6 +264,7 @@ export default function Dashboard({ substances, entries }) {
                   <th className="text-left py-2 px-2 text-slate-400 font-medium">Flavor</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Used (g)</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Sessions</th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Avg/Dab</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">g/day</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Sess/day</th>
                 </tr>
@@ -270,12 +272,26 @@ export default function Dashboard({ substances, entries }) {
               <tbody>
                 {substanceStats.map((stat) => (
                   <tr key={stat.substance.id} className="border-b border-slate-800">
-                    <td className="py-3 px-2 font-medium text-slate-200">{stat.substance.name}</td>
+                    <td className="py-3 px-2 font-medium text-slate-200">
+                      {stat.substance.name}
+                      {!stat.substance.active && (
+                        <span className="ml-2 text-xs text-slate-500">(Inactive)</span>
+                      )}
+                    </td>
                     <td className="py-3 px-2 text-right font-mono text-emerald-400">
-                      {stat.totalMass}
+                      {stat.actualMassUsed > 0 && stat.actualMassUsed !== stat.totalMass ? (
+                        <span title={`From entries: ${stat.totalMass}g`}>
+                          {stat.actualMassUsed}*
+                        </span>
+                      ) : (
+                        stat.totalMass
+                      )}
                     </td>
                     <td className="py-3 px-2 text-right font-mono text-slate-300">
                       {stat.sessions}
+                    </td>
+                    <td className="py-3 px-2 text-right font-mono text-purple-400">
+                      {stat.avgDabMass > 0 ? stat.avgDabMass : '-'}
                     </td>
                     <td className="py-3 px-2 text-right font-mono text-slate-300">
                       {stat.massPerDay}
@@ -287,6 +303,9 @@ export default function Dashboard({ substances, entries }) {
                 ))}
               </tbody>
             </table>
+            <p className="text-xs text-slate-500 mt-2">
+              * Actual mass used (calculated from final mass)
+            </p>
           </div>
         </div>
       )}
@@ -351,9 +370,21 @@ export default function Dashboard({ substances, entries }) {
           </div>
         </div>
 
+        <div className="mb-4 flex justify-between items-center">
+          <label className="text-sm text-slate-400 flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={showInactive}
+              onChange={(e) => setShowInactive(e.target.checked)}
+              className="rounded bg-slate-700 border-slate-600"
+            />
+            Show inactive flavors
+          </label>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           {substances
-            .filter((s) => s.active)
+            .filter((s) => showInactive || s.active)
             .map((substance) => {
               const isSelected = selectedSubstances.includes(substance.id);
               return (
@@ -373,7 +404,12 @@ export default function Dashboard({ substances, entries }) {
                       : 'border-slate-700 bg-slate-800 hover:border-slate-600 text-slate-300'
                   }`}
                 >
-                  {substance.name}
+                  <div className="flex justify-between items-center">
+                    <span>{substance.name}</span>
+                    {!substance.active && (
+                      <span className="text-xs text-slate-500">(Inactive)</span>
+                    )}
+                  </div>
                 </button>
               );
             })}

@@ -10,9 +10,15 @@ A simple, privacy-first web app to track cannabis concentrate usage using mass m
   - Mass & sessions per day averages prominently displayed
   - Weekly comparison (this week vs last week) with trend indicators
   - Per-flavor breakdown table with daily usage rates
+  - **Average dab mass calculation** - Shows actual mass per session
   - Day of week usage patterns (bar chart)
   - Mass distribution pie charts showing t, e, and remaining for each flavor
   - All metrics auto-recalculate instantly when new dabs are recorded
+- 🏁 **Flavor Lifecycle Management** - Complete tracking from start to finish
+  - **Final mass recording** - Capture actual remaining mass when finishing a flavor
+  - **Actual mass used calculation** - Compare theoretical vs actual consumption
+  - **Average dab mass** - Precise per-session usage based on actual final mass
+  - **Inactive flavor charts** - View historical data for finished flavors
 - 🎯 **Button-Based Interface** - Replaced all dropdowns with touch-friendly button grids
 - 🔀 **Settings as Swipeable Page** - Natural navigation flow (5 pages total)
 - 🎨 **Minimal Navbar** - Removed title and gear icon for maximum content space

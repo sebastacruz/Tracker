@@ -67,6 +67,32 @@ export function getTotalUsage(substanceId, entries) {
 }
 
 /**
+ * Get actual mass used for a substance (using finalMass if available)
+ * @param {object} substance - Substance object
+ * @param {array} entries - Array of all entries
+ * @returns {object} - { actualMassUsed, avgDabMass, usedFromEntries, hasFinalMass }
+ */
+export function getActualMassUsed(substance, entries) {
+  const substanceEntries = entries.filter((e) => e.substanceId === substance.id);
+  const usedFromEntries = substanceEntries.reduce((sum, e) => sum + (e.delta || 0), 0);
+
+  const hasFinalMass = substance.finalMass !== null && substance.finalMass !== undefined;
+  const actualMassUsed = hasFinalMass
+    ? substance.theoreticalInitialMass - substance.finalMass
+    : usedFromEntries;
+
+  const avgDabMass = substanceEntries.length > 0 ? actualMassUsed / substanceEntries.length : 0;
+
+  return {
+    actualMassUsed: Number(actualMassUsed.toFixed(2)),
+    avgDabMass: Number(avgDabMass.toFixed(4)),
+    usedFromEntries: Number(usedFromEntries.toFixed(2)),
+    hasFinalMass,
+    sessionCount: substanceEntries.length,
+  };
+}
+
+/**
  * Format mass value for display
  * @param {number} mass - Mass value
  * @param {number} decimals - Number of decimal places
@@ -279,11 +305,11 @@ export function getOverallStats(entries, person) {
  * @param {array} substances - All substances
  * @returns {array} - Array of substance stats
  */
-export function getPerSubstanceStats(entries, person, substances) {
+export function getPerSubstanceStats(entries, person, substances, includeInactive = false) {
   const personEntries = getPersonEntries(entries, person);
 
   return substances
-    .filter((s) => s.active)
+    .filter((s) => includeInactive || s.active)
     .map((substance) => {
       const substanceEntries = personEntries.filter((e) => e.substanceId === substance.id);
 
@@ -294,6 +320,8 @@ export function getPerSubstanceStats(entries, person, substances) {
           sessions: 0,
           massPerDay: 0,
           sessionsPerDay: 0,
+          actualMassUsed: 0,
+          avgDabMass: 0,
         };
       }
 
@@ -302,12 +330,16 @@ export function getPerSubstanceStats(entries, person, substances) {
       const lastEntry = new Date(substanceEntries[substanceEntries.length - 1].timestamp);
       const daysDiff = Math.max(1, (lastEntry - firstEntry) / (1000 * 60 * 60 * 24));
 
+      const actualStats = getActualMassUsed(substance, entries);
+
       return {
         substance,
         totalMass: Number(totalMass.toFixed(2)),
         sessions: substanceEntries.length,
         massPerDay: Number((totalMass / daysDiff).toFixed(2)),
         sessionsPerDay: Number((substanceEntries.length / daysDiff).toFixed(1)),
+        actualMassUsed: actualStats.actualMassUsed,
+        avgDabMass: actualStats.avgDabMass,
       };
     })
     .sort((a, b) => b.totalMass - a.totalMass);

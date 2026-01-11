@@ -312,6 +312,8 @@ Browser localStorage
            "id": "uuid-1",
            "name": "Apollo",
            "theoreticalInitialMass": 50.0,
+           "totalInitialMass": null,
+           "finalMass": null,
            "createdAt": "ISO-8601",
            "active": true
          }

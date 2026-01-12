@@ -20,8 +20,8 @@ export default function SubstanceManager() {
 
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
-  const [theoreticalMass, setTheoreticalMass] = useState('1');
-  const [totalInitialMass, setTotalInitialMass] = useState('');
+  const [advertisedMass, setAdvertisedMass] = useState('1');
+  const [grossInitialMass, setGrossInitialMass] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [filterActive, setFilterActive] = useState(true);
@@ -38,25 +38,25 @@ export default function SubstanceManager() {
       return;
     }
 
-    if (!theoreticalMass || parseFloat(theoreticalMass) <= 0) {
-      setError('Please enter a valid theoretical initial mass');
+    if (!advertisedMass || parseFloat(advertisedMass) <= 0) {
+      setError('Please enter a valid advertised mass');
       return;
     }
 
-    if (totalInitialMass && parseFloat(totalInitialMass) <= 0) {
-      setError('Total initial mass must be positive if provided');
+    if (grossInitialMass && parseFloat(grossInitialMass) <= 0) {
+      setError('Gross initial mass must be positive if provided');
       return;
     }
 
     try {
       addSubstance(
         name,
-        parseFloat(theoreticalMass),
-        totalInitialMass ? parseFloat(totalInitialMass) : null
+        parseFloat(advertisedMass),
+        grossInitialMass ? parseFloat(grossInitialMass) : null
       );
       setName('');
-      setTheoreticalMass('1');
-      setTotalInitialMass('');
+      setAdvertisedMass('1');
+      setGrossInitialMass('');
       setShowForm(false);
       setSuccess('Flavor added! You can now select it from the entry screen.');
       setTimeout(() => {
@@ -173,33 +173,32 @@ export default function SubstanceManager() {
             </div>
 
             <div>
-              <label className="label-base">Theoretical Initial Mass (g)</label>
+              <label className="label-base">Advertised Mass (g)</label>
               <input
                 type="number"
                 step="0.01"
-                value={theoreticalMass}
-                onChange={(e) => setTheoreticalMass(e.target.value)}
-                placeholder="e.g., 50.0"
+                value={advertisedMass}
+                onChange={(e) => setAdvertisedMass(e.target.value)}
+                placeholder="e.g., 1.0"
                 className="input-base w-full"
               />
               <p className="text-xs text-slate-400 mt-2">
-                The mass when first put into use. Used to calculate remaining amount.
+                The advertised product mass (what the label says). Used to calculate remaining.
               </p>
             </div>
 
             <div>
-              <label className="label-base">Total Initial Mass (g) - Optional</label>
+              <label className="label-base">Gross Initial Mass (g) - Optional</label>
               <input
                 type="number"
                 step="0.01"
-                value={totalInitialMass}
-                onChange={(e) => setTotalInitialMass(e.target.value)}
-                placeholder="e.g., 3.5"
+                value={grossInitialMass}
+                onChange={(e) => setGrossInitialMass(e.target.value)}
+                placeholder="e.g., 50.0"
                 className="input-base w-full"
               />
               <p className="text-xs text-slate-400 mt-2">
-                The total purchased amount. This will be tracked separately and displayed as
-                &quot;Total Mass&quot; in the substance details.
+                Total weight including container (jar + product on scale at start).
               </p>
             </div>
 
@@ -212,8 +211,8 @@ export default function SubstanceManager() {
                 onClick={() => {
                   setShowForm(false);
                   setName('');
-                  setTheoreticalMass('1');
-                  setTotalInitialMass('');
+                  setAdvertisedMass('1');
+                  setGrossInitialMass('');
                   setError('');
                 }}
                 className="btn-secondary flex-1"
@@ -245,7 +244,7 @@ export default function SubstanceManager() {
             const usageRate = getUsageRate(substance, entries);
             const depletion = getProjectedDepletion(substance, entries);
             const percentRemaining =
-              remaining > 0 ? ((remaining / substance.theoreticalInitialMass) * 100).toFixed(1) : 0;
+              remaining > 0 ? ((remaining / substance.advertisedMass) * 100).toFixed(1) : 0;
 
             return (
               <div key={substance.id} className="card">
@@ -288,23 +287,23 @@ export default function SubstanceManager() {
 
                 {/* Stats */}
                 <div className="space-y-2 mb-4 text-sm">
-                  {substance.totalInitialMass && (
+                  <div className="flex justify-between text-slate-300">
+                    <span>Advertised Mass:</span>
+                    <span className="font-mono">{substance.advertisedMass}g</span>
+                  </div>
+                  {substance.grossInitialMass && (
                     <div className="flex justify-between text-slate-300">
-                      <span>Total Mass:</span>
+                      <span>Gross Initial:</span>
                       <span className="font-mono font-bold text-blue-400">
-                        {substance.totalInitialMass}g
+                        {substance.grossInitialMass}g
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between text-slate-300">
-                    <span>Initial (Theoretical):</span>
-                    <span className="font-mono">{substance.theoreticalInitialMass}g</span>
-                  </div>
-                  {substance.finalMass !== null && substance.finalMass !== undefined && (
+                  {substance.grossFinalMass !== null && substance.grossFinalMass !== undefined && (
                     <div className="flex justify-between text-slate-300">
-                      <span>Final Mass:</span>
+                      <span>Gross Final:</span>
                       <span className="font-mono font-bold text-amber-400">
-                        {substance.finalMass}g
+                        {substance.grossFinalMass}g
                       </span>
                     </div>
                   )}
@@ -319,16 +318,16 @@ export default function SubstanceManager() {
                   <div className="flex justify-between text-slate-300">
                     <span>Used (from entries):</span>
                     <span className="font-mono">
-                      {(substance.theoreticalInitialMass - remaining).toFixed(2)}g
+                      {(substance.advertisedMass - remaining).toFixed(2)}g
                     </span>
                   </div>
-                  {substance.finalMass !== null && substance.finalMass !== undefined && (
+                  {substance.grossFinalMass !== null && substance.grossFinalMass !== undefined && (
                     <div className="flex justify-between text-slate-300">
                       <span>Actual Used:</span>
                       <span className="font-mono font-bold text-purple-400">
                         {(
-                          (substance.totalInitialMass || substance.theoreticalInitialMass) -
-                          substance.finalMass
+                          (substance.grossInitialMass || substance.advertisedMass) -
+                          substance.grossFinalMass
                         ).toFixed(2)}
                         g
                       </span>
@@ -400,8 +399,8 @@ export default function SubstanceManager() {
         onConfirm={handleFinishConfirm}
         onCancel={handleFinishCancel}
         substanceName={substanceToFinish?.name || ''}
-        theoreticalInitialMass={substanceToFinish?.theoreticalInitialMass || 0}
-        totalInitialMass={substanceToFinish?.totalInitialMass || null}
+        advertisedMass={substanceToFinish?.advertisedMass || 0}
+        grossInitialMass={substanceToFinish?.grossInitialMass || null}
       />
     </div>
   );

@@ -14,17 +14,17 @@ export function useSubstances() {
     setSubstances(data.substances || []);
   }, []);
 
-  const addSubstance = useCallback((name, theoreticalInitialMass, totalInitialMass = null) => {
-    if (!name || typeof theoreticalInitialMass !== 'number') {
+  const addSubstance = useCallback((name, advertisedMass, grossInitialMass = null) => {
+    if (!name || typeof advertisedMass !== 'number') {
       throw new Error('Invalid substance data');
     }
 
     const newSubstance = {
       id: uuidv4(),
       name: name.trim(),
-      theoreticalInitialMass: Number(theoreticalInitialMass),
-      totalInitialMass: totalInitialMass ? Number(totalInitialMass) : null,
-      finalMass: null,
+      advertisedMass: Number(advertisedMass),
+      grossInitialMass: grossInitialMass ? Number(grossInitialMass) : null,
+      grossFinalMass: null,
       createdAt: new Date().toISOString(),
       active: true,
     };
@@ -59,11 +59,15 @@ export function useSubstances() {
     }
   }, []);
 
-  const deactivateSubstance = useCallback((id, finalMass = null) => {
+  const deactivateSubstance = useCallback((id, grossFinalMass = null) => {
     setSubstances((prev) => {
       const updated = prev.map((s) =>
         s.id === id
-          ? { ...s, active: false, finalMass: finalMass !== null ? Number(finalMass) : null }
+          ? {
+              ...s,
+              active: false,
+              grossFinalMass: grossFinalMass !== null ? Number(grossFinalMass) : null,
+            }
           : s
       );
       const data = getData();

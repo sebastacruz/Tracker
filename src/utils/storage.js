@@ -12,19 +12,108 @@ const defaultData = {
   substances: [],
   entries: [],
   metadata: {
-    version: '1.0',
+    version: '2.0',
     lastUpdated: new Date().toISOString(),
   },
 };
 
 /**
+ * Migrate data from v1.0 to v2.0 schema
+ * Changes:
+ * - Substances: theoreticalInitialMass → advertisedMass
+ * - Substances: totalInitialMass → grossInitialMass
+ * - Substances: finalMass → grossFinalMass
+ * - Entries: Remove initialMass/finalMass (keep only delta)
+ * @param {object} data - Old format data
+ * @returns {object} - Migrated data
+ */
+function migrateToV2(data) {
+  console.log('Migrating data from v1.0 to v2.0...');
+
+  const migratedSubstances = data.substances.map((substance) => {
+    const migrated = {
+      id: substance.id,
+      name: substance.name,
+      advertisedMass: substance.theoreticalInitialMass || substance.advertisedMass || 1.0,
+      grossInitialMass: substance.totalInitialMass || substance.grossInitialMass || null,
+      grossFinalMass:
+        substance.finalMass !== undefined
+          ? substance.finalMass
+          : substance.grossFinalMass !== undefined
+            ? substance.grossFinalMass
+            : null,
+      active: substance.active !== undefined ? substance.active : true,
+      createdAt: substance.createdAt || new Date().toISOString(),
+    };
+
+    // Remove old fields
+    delete migrated.theoreticalInitialMass;
+    delete migrated.totalInitialMass;
+    delete migrated.finalMass;
+
+    return migrated;
+  });
+
+  const migratedEntries = data.entries.map((entry) => {
+    const migrated = {
+      id: entry.id,
+      substanceId: entry.substanceId,
+      person: entry.person,
+      delta: entry.delta,
+      timestamp: entry.timestamp,
+    };
+
+    // Include notes if present
+    if (entry.notes) {
+      migrated.notes = entry.notes;
+    }
+
+    return migrated;
+  });
+
+  console.log(
+    `Migrated ${migratedSubstances.length} substances and ${migratedEntries.length} entries`
+  );
+
+  return {
+    substances: migratedSubstances,
+    entries: migratedEntries,
+    metadata: {
+      version: '2.0',
+      lastUpdated: new Date().toISOString(),
+    },
+  };
+}
+
+/**
  * Get all data from localStorage
+ * Automatically migrates from v1.0 to v2.0 if needed
  * @returns {object} - Complete tracker data
  */
 export function getData() {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : defaultData;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) {
+      return defaultData;
+    }
+
+    let data = JSON.parse(stored);
+
+    // Auto-migrate if old schema detected
+    const needsMigration =
+      !data.metadata?.version ||
+      data.metadata.version === '1.0' ||
+      (data.substances &&
+        data.substances.length > 0 &&
+        data.substances[0].theoreticalInitialMass !== undefined);
+
+    if (needsMigration) {
+      data = migrateToV2(data);
+      // Save migrated data immediately
+      saveData(data);
+    }
+
+    return data;
   } catch (error) {
     console.error('Error reading data from localStorage:', error);
     return defaultData;
@@ -86,27 +175,17 @@ export function exportAsCSV(entries, substances) {
       return acc;
     }, {});
 
-    // CSV headers
-    const headers = [
-      'Date',
-      'Time',
-      'Substance',
-      'Person',
-      'Initial Mass (g)',
-      'Final Mass (g)',
-      'Delta (g)',
-    ];
+    // CSV headers - removed fake initialMass/finalMass columns
+    const headers = ['Date', 'Time', 'Substance', 'Person', 'Delta (g)'];
 
     // CSV rows
-    const rows = entries.map(entry => {
+    const rows = entries.map((entry) => {
       const date = new Date(entry.timestamp);
       return [
         date.toISOString().split('T')[0],
         date.toTimeString().split(' ')[0],
         substanceLookup[entry.substanceId] || 'Unknown',
         entry.person,
-        entry.initialMass,
-        entry.finalMass,
         entry.delta,
       ];
     });
@@ -114,9 +193,7 @@ export function exportAsCSV(entries, substances) {
     // Create CSV content
     const csvContent = [
       headers.join(','),
-      ...rows.map(row =>
-        row.map(cell => `"${cell}"`).join(',')
-      ),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
     ].join('\n');
 
     // Download
@@ -136,15 +213,30 @@ export function exportAsCSV(entries, substances) {
 
 /**
  * Import data from JSON file
+ * Automatically migrates old format data to v2.0
  * @param {File} file - JSON file to import
- * @returns {Promise<object>} - Imported data
+ * @returns {Promise<object>} - Imported data (migrated if needed)
  */
 export async function importFromJSON(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target.result);
+        let data = JSON.parse(e.target.result);
+
+        // Auto-migrate if old schema detected
+        const needsMigration =
+          !data.metadata?.version ||
+          data.metadata.version === '1.0' ||
+          (data.substances &&
+            data.substances.length > 0 &&
+            data.substances[0].theoreticalInitialMass !== undefined);
+
+        if (needsMigration) {
+          console.log('Migrating imported data...');
+          data = migrateToV2(data);
+        }
+
         resolve(data);
       } catch (error) {
         reject(new Error('Invalid JSON file'));

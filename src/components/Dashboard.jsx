@@ -92,7 +92,7 @@ export default function Dashboard({ substances, entries }) {
 
       const substance = substanceLookup[entry.substanceId];
       if (substance) {
-        const remaining = substance.theoreticalInitialMass - substanceRunning[entry.substanceId];
+        const remaining = substance.advertisedMass - substanceRunning[entry.substanceId];
         timeMap[key][substance.name] = Number(remaining.toFixed(2));
       }
     });

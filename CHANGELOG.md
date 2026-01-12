@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Data Model Refactoring (2026-01-12)**: Complete schema overhaul to eliminate fake computed values
+  - Renamed `theoreticalInitialMass` → `advertisedMass` (clearer naming for product label mass)
+  - Renamed `totalInitialMass` → `grossInitialMass` (jar + product on scale at start)
+  - Renamed `finalMass` → `grossFinalMass` (jar + remaining product at finish)
+  - Simplified entries to store only real data: delta, not computed initialMass/finalMass
+  - QuickEntry now directly records delta without fake mass computation
+  - History table shows only Date/Time, Flavor, Person, Delta, Action (removed fake columns)
+  - Automatic migration from v1.0 to v2.0 schema on first load
+  - CSV export simplified to show only real data (Date, Time, Substance, Person, Delta)
+  - JSON import automatically migrates old format data
+  - All calculations updated to use `advertisedMass` instead of `theoreticalInitialMass`
+  - FinalMassDialog updated with clearer instructions for gross weight measurement
+  - SubstanceManager form updated with "Advertised Mass" and "Gross Initial Mass" labels
+
 ### Added
 - **Final Mass Recording (2026-01-11)**: Complete lifecycle tracking with actual usage calculations
   - FinalMassDialog modal to capture final mass when finishing flavors

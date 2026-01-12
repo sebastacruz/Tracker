@@ -9,8 +9,8 @@ export default function FinalMassDialog({
   onConfirm,
   onCancel,
   substanceName,
-  theoreticalInitialMass,
-  totalInitialMass,
+  advertisedMass,
+  grossInitialMass,
 }) {
   const [finalMass, setFinalMass] = useState('');
   const [error, setError] = useState('');
@@ -35,20 +35,20 @@ export default function FinalMassDialog({
     setError('');
 
     const finalMassNum = parseFloat(finalMass);
-    const referenceMass = totalInitialMass || theoreticalInitialMass;
+    const referenceMass = grossInitialMass || advertisedMass;
 
     if (!finalMass || isNaN(finalMassNum)) {
-      setError('Please enter a valid final mass');
+      setError('Please enter a valid gross final mass');
       return;
     }
 
     if (finalMassNum < 0) {
-      setError('Final mass cannot be negative');
+      setError('Gross final mass cannot be negative');
       return;
     }
 
     if (finalMassNum > referenceMass) {
-      setError(`Final mass cannot exceed ${referenceMass}g (initial mass)`);
+      setError(`Gross final mass cannot exceed ${referenceMass}g (gross initial mass)`);
       return;
     }
 
@@ -78,27 +78,25 @@ export default function FinalMassDialog({
         {/* Content */}
         <form onSubmit={handleSubmit}>
           <div className="px-6 py-4 space-y-4">
-            {totalInitialMass ? (
+            {grossInitialMass ? (
               <div className="p-3 bg-blue-900/30 border border-blue-700/50 rounded-lg">
                 <p className="text-blue-200 text-sm font-semibold mb-2">
-                  ⚠️ Important: Enter TOTAL remaining mass
+                  ⚠️ Important: Weigh the jar + remaining product
                 </p>
                 <p className="text-blue-300/90 text-xs">
-                  Include what&apos;s in the jar AND what&apos;s stored. This should be measured
-                  against your original <strong>{totalInitialMass}g total purchase</strong>, not
-                  just the {theoreticalInitialMass}g that was in use.
+                  Put the jar on the scale to get the total gross weight (container + remaining
+                  product). Compare against gross initial mass of{' '}
+                  <strong>{grossInitialMass}g</strong>.
                 </p>
               </div>
             ) : (
               <p className="text-slate-300">
-                Enter the final remaining mass to calculate actual usage and average dab mass.
+                Enter the gross final mass (jar + remaining product) to calculate actual usage.
               </p>
             )}
 
             <div>
-              <label className="label-base">
-                {totalInitialMass ? 'Total Final Mass (g)' : 'Final Mass (g)'}
-              </label>
+              <label className="label-base">Gross Final Mass (g)</label>
               <input
                 type="number"
                 step="0.01"
@@ -108,20 +106,20 @@ export default function FinalMassDialog({
                   setError('');
                 }}
                 placeholder={
-                  totalInitialMass ? `Max: ${totalInitialMass}g` : `Max: ${theoreticalInitialMass}g`
+                  grossInitialMass ? `Max: ${grossInitialMass}g` : `Max: ${advertisedMass}g`
                 }
                 className="input-base w-full"
                 autoFocus
               />
               <p className="text-xs text-slate-400 mt-1">
-                {totalInitialMass ? (
+                {grossInitialMass ? (
                   <>
-                    <strong>Reference:</strong> {totalInitialMass}g total purchased |{' '}
-                    {theoreticalInitialMass}g was in use
+                    <strong>Reference:</strong> {grossInitialMass}g gross initial mass |{' '}
+                    {advertisedMass}g advertised product
                   </>
                 ) : (
                   <>
-                    <strong>Reference:</strong> {theoreticalInitialMass}g initial mass
+                    <strong>Reference:</strong> {advertisedMass}g advertised mass
                   </>
                 )}
               </p>
@@ -139,10 +137,7 @@ export default function FinalMassDialog({
                 <p>
                   Actual mass used:{' '}
                   <span className="font-mono font-bold">
-                    {((totalInitialMass || theoreticalInitialMass) - parseFloat(finalMass)).toFixed(
-                      2
-                    )}
-                    g
+                    {((grossInitialMass || advertisedMass) - parseFloat(finalMass)).toFixed(2)}g
                   </span>
                 </p>
               </div>
@@ -185,6 +180,6 @@ FinalMassDialog.propTypes = {
   onConfirm: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
   substanceName: PropTypes.string.isRequired,
-  theoreticalInitialMass: PropTypes.number.isRequired,
-  totalInitialMass: PropTypes.number,
+  advertisedMass: PropTypes.number.isRequired,
+  grossInitialMass: PropTypes.number,
 };

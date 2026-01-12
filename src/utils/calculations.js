@@ -17,18 +17,18 @@ export function calculateDelta(initialMass, finalMass) {
 
 /**
  * Calculate remaining mass for a substance
- * @param {number} theoreticalMass - Theoretical initial mass
+ * @param {number} advertisedMass - Advertised product mass
  * @param {array} deltas - Array of usage deltas
  * @returns {number} - Remaining mass rounded to 2 decimals
  */
-export function calculateRemaining(theoreticalMass, deltas = []) {
-  if (typeof theoreticalMass !== 'number') {
+export function calculateRemaining(advertisedMass, deltas = []) {
+  if (typeof advertisedMass !== 'number') {
     return 0;
   }
   const totalUsed = Array.isArray(deltas)
     ? deltas.reduce((sum, delta) => sum + (delta || 0), 0)
     : 0;
-  return Number((theoreticalMass - totalUsed).toFixed(2));
+  return Number((advertisedMass - totalUsed).toFixed(2));
 }
 
 /**
@@ -51,7 +51,7 @@ export function getSubstancDeltas(substanceId, entries) {
  */
 export function getSubstanceRemaining(substance, entries) {
   const deltas = getSubstancDeltas(substance.id, entries);
-  return calculateRemaining(substance.theoreticalInitialMass, deltas);
+  return calculateRemaining(substance.advertisedMass, deltas);
 }
 
 /**
@@ -67,7 +67,7 @@ export function getTotalUsage(substanceId, entries) {
 }
 
 /**
- * Get actual mass used for a substance (using finalMass if available)
+ * Get actual mass used for a substance (using grossFinalMass if available)
  * @param {object} substance - Substance object
  * @param {array} entries - Array of all entries
  * @returns {object} - { actualMassUsed, avgDabMass, usedFromEntries, hasFinalMass }
@@ -76,14 +76,13 @@ export function getActualMassUsed(substance, entries) {
   const substanceEntries = entries.filter((e) => e.substanceId === substance.id);
   const usedFromEntries = substanceEntries.reduce((sum, e) => sum + (e.delta || 0), 0);
 
-  const hasFinalMass = substance.finalMass !== null && substance.finalMass !== undefined;
+  const hasFinalMass = substance.grossFinalMass !== null && substance.grossFinalMass !== undefined;
 
-  // CRITICAL: When calculating actual usage with finalMass, we must use the correct reference:
-  // - If totalInitialMass exists, finalMass represents the total remaining (use totalInitialMass as reference)
-  // - If only theoreticalInitialMass exists, finalMass represents what's in the container (use theoreticalInitialMass)
-  // This ensures we're always comparing apples to apples and prevents negative usage values
-  const referenceMass = substance.totalInitialMass || substance.theoreticalInitialMass;
-  const actualMassUsed = hasFinalMass ? referenceMass - substance.finalMass : usedFromEntries;
+  // When calculating actual usage with grossFinalMass, we must use the correct reference:
+  // - If grossInitialMass exists, grossFinalMass represents the gross weight at finish
+  // - Otherwise, we fall back to advertisedMass (though this shouldn't happen in practice)
+  const referenceMass = substance.grossInitialMass || substance.advertisedMass;
+  const actualMassUsed = hasFinalMass ? referenceMass - substance.grossFinalMass : usedFromEntries;
 
   const avgDabMass = substanceEntries.length > 0 ? actualMassUsed / substanceEntries.length : 0;
 
@@ -456,7 +455,7 @@ export function getSubstanceMassDistribution(substance, entries) {
     .reduce((sum, e) => sum + e.delta, 0);
 
   const totalUsed = tMass + eMass;
-  const remaining = Math.max(0, substance.theoreticalInitialMass - totalUsed);
+  const remaining = Math.max(0, substance.advertisedMass - totalUsed);
 
   return [
     { name: 't', value: Number(tMass.toFixed(2)), fill: '#2E6F40' },

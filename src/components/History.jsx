@@ -125,8 +125,6 @@ export default function History({ substances, entries }) {
                 <th className="text-left py-3 px-4 font-semibold text-slate-300">Date/Time</th>
                 <th className="text-left py-3 px-4 font-semibold text-slate-300">Flavor</th>
                 <th className="text-left py-3 px-4 font-semibold text-slate-300">Person</th>
-                <th className="text-right py-3 px-4 font-semibold text-slate-300">Initial (g)</th>
-                <th className="text-right py-3 px-4 font-semibold text-slate-300">Final (g)</th>
                 <th className="text-right py-3 px-4 font-semibold text-slate-300">Delta (g)</th>
                 <th className="text-center py-3 px-4 font-semibold text-slate-300">Action</th>
               </tr>
@@ -147,12 +145,6 @@ export default function History({ substances, entries }) {
                       </td>
                       <td className="py-3 px-4 font-medium">{substance?.name || 'Unknown'}</td>
                       <td className="py-3 px-4">{entry.person}</td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-300">
-                        {entry.initialMass}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-300">
-                        {entry.finalMass}
-                      </td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-emerald-400">
                         {entry.delta}
                       </td>

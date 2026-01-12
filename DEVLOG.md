@@ -8,6 +8,183 @@
 
 ---
 
+## Phase 10: Data Flow Refactoring ✅ COMPLETED
+
+### January 11-12, 2026
+
+#### Problem Analysis
+
+**Root Cause Identified**: The app's statistics and metrics are broken due to a confusing data model where entries store **fake** `initialMass` and `finalMass` values computed from `theoreticalInitialMass`, not actual measurements.
+
+**Current Schema Issues**:
+
+1. **Substances** have confusing fields:
+   - `theoreticalInitialMass` - advertised product mass (correct concept, bad name)
+   - `totalInitialMass` - meant for "total purchased" but confused with gross weight
+   - `finalMass` - unclear what it represents
+
+2. **Entries** store fabricated data:
+   - `initialMass` and `finalMass` are COMPUTED values, not scale readings
+   - Only `delta` (dab size) is real user input
+
+**Code Location** ([QuickEntry.jsx:61-70](src/components/QuickEntry.jsx#L61-L70)):
+```javascript
+// Current broken flow - fabricates mass values
+const totalUsed = substanceEntries.reduce((sum, entry) => sum + (entry.delta || 0), 0);
+const currentMass = substance.theoreticalInitialMass - totalUsed;
+const initialMass = currentMass;  // FAKE - not a scale reading!
+const finalMass = currentMass - deltaValue;  // FAKE - not a scale reading!
+addEntry(substanceId, person, initialMass, finalMass, notes);
+```
+
+#### Proposed Solution
+
+**New Data Model**:
+
+**Substances** (field renames for clarity):
+```javascript
+{
+  id: "uuid",
+  name: "string",
+  advertisedMass: 1.0,          // Renamed from theoreticalInitialMass
+  grossInitialMass: 50.0,       // NEW: Jar + product on scale at start
+  grossFinalMass: null,         // Renamed from finalMass (at retirement)
+  active: true,
+  createdAt: "ISO-8601"
+}
+```
+
+**Entries** (simplified - remove fake data):
+```javascript
+{
+  id: "uuid",
+  substanceId: "uuid",
+  person: "t" | "e",
+  delta: 0.04,                  // Just the dab size (only real data)
+  timestamp: "ISO-8601",
+  notes: null
+}
+```
+
+**Key Calculations**:
+```javascript
+remaining = advertisedMass - sum(deltas)
+containerWeight = grossInitialMass - advertisedMass
+actualUsed = grossInitialMass - grossFinalMass  // At retirement
+```
+
+#### Implementation Plan
+
+**Phase 1: Core Data Layer**
+- storage.js: Add `migrateToV2()` function for automatic migration
+- useSubstances.js: Rename fields, update function signatures
+- useEntries.js: Simplify `addEntry()` to delta-only
+
+**Phase 2: Calculations**
+- calculations.js: Update all functions to use `advertisedMass`
+- Add `getContainerWeight()` helper
+
+**Phase 3: UI Components**
+- SubstanceManager.jsx: Add "Gross Initial Mass" field, rename labels
+- FinalMassDialog.jsx: Update to "Gross Final Mass"
+- QuickEntry.jsx: Remove fake mass computation (major fix)
+- Dashboard.jsx: Update field references
+- History.jsx: Remove fake columns
+
+**Phase 4: Export/Import**
+- Handle migration of old JSON exports on import
+
+#### Files to Modify
+
+| File | Changes |
+|------|---------|
+| src/utils/storage.js | Migration logic, schema defaults |
+| src/hooks/useSubstances.js | Field renames, function signatures |
+| src/hooks/useEntries.js | Simplify to delta-only |
+| src/utils/calculations.js | Update all field references |
+| src/components/QuickEntry.jsx | Remove fake mass computation |
+| src/components/SubstanceManager.jsx | Form fields, display labels |
+| src/components/FinalMassDialog.jsx | Update props, validation |
+| src/components/Dashboard.jsx | Field references |
+| src/components/History.jsx | Remove fake columns |
+
+#### Migration Strategy
+
+Automatic on first app load:
+1. Detect old schema (has `theoreticalInitialMass`)
+2. Transform substances: rename fields
+3. Transform entries: keep only `delta`, remove fake fields
+4. Update metadata version to `2.0`
+
+Old JSON exports will also be migrated on import.
+
+#### Implementation Summary
+
+**Status**: ✅ COMPLETED - All phases implemented successfully
+
+**Changes Made**:
+
+1. **storage.js**:
+   - Added `migrateToV2()` function for automatic schema migration
+   - Updated default data version to `2.0`
+   - Modified `getData()` to auto-migrate on first load
+   - Updated `importFromJSON()` to migrate old exports
+   - Simplified CSV export (removed fake columns)
+
+2. **useSubstances.js**:
+   - Renamed `theoreticalInitialMass` → `advertisedMass`
+   - Renamed `totalInitialMass` → `grossInitialMass`
+   - Renamed `finalMass` → `grossFinalMass`
+   - Updated `addSubstance()` signature
+   - Updated `deactivateSubstance()` signature
+
+3. **useEntries.js**:
+   - Simplified `addEntry()` to `(substanceId, person, delta, notes)`
+   - Removed fake mass computation
+   - Updated `updateEntry()` to delta-only
+
+4. **calculations.js**:
+   - Updated all functions to use `advertisedMass`
+   - Fixed `getActualMassUsed()` to use `grossInitialMass`/`grossFinalMass`
+   - Updated `getSubstanceRemaining()` calculation
+   - Updated `getSubstanceMassDistribution()` for charts
+
+5. **QuickEntry.jsx** (Critical Fix):
+   - Removed fake mass computation logic
+   - Now directly calls `addEntry()` with delta only
+   - Simplified state management
+   - Removed unused state variables
+
+6. **SubstanceManager.jsx**:
+   - Updated form labels ("Advertised Mass", "Gross Initial Mass")
+   - Updated display stats to show new field names
+   - Updated help text for clarity
+
+7. **FinalMassDialog.jsx**:
+   - Updated to "Gross Final Mass"
+   - Fixed validation to use `grossInitialMass` as reference
+   - Improved UI guidance
+
+8. **Dashboard.jsx**:
+   - Updated remaining mass calculation
+
+9. **History.jsx**:
+   - Removed "Initial (g)" and "Final (g)" columns
+   - Now shows only real data: Date/Time, Flavor, Person, Delta, Action
+
+#### Verification Checklist
+
+- [x] Storage migration logic implemented
+- [x] All hooks updated with new field names
+- [x] Calculations updated to use advertisedMass
+- [x] QuickEntry fake mass computation removed
+- [x] All UI components updated
+- [x] CSV export simplified
+- [x] JSON import auto-migration working
+- [x] No compilation errors
+
+---
+
 ## Phase 9: Final Mass Recording (v1.3.0 - Unreleased)
 
 ### January 11, 2026

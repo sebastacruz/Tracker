@@ -23,20 +23,11 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
   const entries = entriesProp;
   const [selectedSubstance, setSelectedSubstance] = useState('');
   const [selectedPerson, setSelectedPerson] = useState('');
-  const [initialMass, setInitialMass] = useState('');
-  const [finalMass, setFinalMass] = useState('');
   const [notes, setNotes] = useState('');
   const [delta, setDelta] = useState(null);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, dabSize: 0 });
-
-  // Validate mass input (must be non-negative number)
-  const isValidMass = (value) => {
-    if (!value) return false;
-    const num = parseFloat(value);
-    return !isNaN(num) && num >= 0;
-  };
 
   const handleNotesChange = (value) => {
     // Sanitize input to prevent XSS
@@ -55,19 +46,9 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
     const deltaValue = confirmDialog.dabSize;
     setConfirmDialog({ isOpen: false, dabSize: 0 });
 
-    const substance = substances.find((s) => s.id === selectedSubstance);
-    if (!substance) return;
-
-    // Calculate current remaining mass based on theoretical initial mass and all previous entries
-    const substanceEntries = entries.filter((e) => e.substanceId === selectedSubstance);
-    const totalUsed = substanceEntries.reduce((sum, entry) => sum + (entry.delta || 0), 0);
-    const currentMass = substance.theoreticalInitialMass - totalUsed;
-
-    const initialMass = currentMass;
-    const finalMass = currentMass - deltaValue;
-
     try {
-      addEntry(selectedSubstance, selectedPerson, initialMass, finalMass, notes || null);
+      // Simply record the delta - no fake mass computation needed
+      addEntry(selectedSubstance, selectedPerson, deltaValue, notes || null);
 
       // Set delta for success message display
       setDelta(deltaValue);
@@ -90,51 +71,6 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
     setConfirmDialog({ isOpen: false, dabSize: 0 });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess(false);
-
-    // Validation
-    if (!selectedSubstance) {
-      setError('Please select a flavor');
-      return;
-    }
-    if (!selectedPerson) {
-      setError('Please enter a person name');
-      return;
-    }
-    if (!isValidMass(initialMass)) {
-      setError('Initial mass must be a non-negative number');
-      return;
-    }
-    if (!isValidMass(finalMass)) {
-      setError('Final mass must be a non-negative number');
-      return;
-    }
-
-    const initial = parseFloat(initialMass);
-    const final = parseFloat(finalMass);
-
-    try {
-      addEntry(selectedSubstance, selectedPerson, initial, final, notes || null);
-
-      // Reset form
-      setSelectedSubstance('');
-      setSelectedPerson('');
-      setInitialMass('');
-      setFinalMass('');
-      setNotes('');
-      setDelta(null);
-      setSuccess(true);
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
-      setError(err.message || 'Error saving entry');
-    }
-  };
-
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-6">
       {/* Success Message */}
@@ -152,7 +88,7 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Flavor Selection - Button Grid */}
         <div className="space-y-3">
           <label className="label-base">Select Flavor</label>
@@ -274,7 +210,7 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
           />
           {notes && <p className="text-xs text-slate-400 mt-1">{notes.length}/200 characters</p>}
         </div>
-      </form>
+      </div>
 
       {/* Confirmation Dialog */}
       <ConfirmDialog

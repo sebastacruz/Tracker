@@ -300,6 +300,8 @@ App
 
 ## localStorage Schema
 
+### v2.0 (Current)
+
 ```
 Browser localStorage
 │
@@ -311,9 +313,9 @@ Browser localStorage
          {
            "id": "uuid-1",
            "name": "Apollo",
-           "theoreticalInitialMass": 50.0,
-           "totalInitialMass": null,
-           "finalMass": null,
+           "advertisedMass": 1.0,        // Renamed from theoreticalInitialMass
+           "grossInitialMass": 50.0,     // Renamed from totalInitialMass
+           "grossFinalMass": null,       // Renamed from finalMass
            "createdAt": "ISO-8601",
            "active": true
          }
@@ -322,50 +324,64 @@ Browser localStorage
          {
            "id": "uuid-2",
            "substanceId": "uuid-1",
-           "person": "Tristan",
-           "initialMass": 47.0,
-           "finalMass": 46.5,
-           "delta": 0.5,
-           "timestamp": "ISO-8601"
+           "person": "t",
+           "delta": 0.04,                // Only real data - no computed values
+           "timestamp": "ISO-8601",
+           "notes": "optional"           // Optional field
          }
        ],
        "metadata": {
-         "version": "1.0",
+         "version": "2.0",
          "lastUpdated": "ISO-8601"
        }
      }
 ```
 
+**Key Changes from v1.0**:
+- Substances: `theoreticalInitialMass` → `advertisedMass` (clearer naming)
+- Substances: `totalInitialMass` → `grossInitialMass` (jar + product)
+- Substances: `finalMass` → `grossFinalMass` (jar + remaining at finish)
+- Entries: Removed `initialMass` and `finalMass` (were computed, not real data)
+- Entries: Now stores only `delta` (the actual dab size measured)
+- Migration: Automatic v1.0 → v2.0 migration on first load
+
 ---
 
 ## Calculation Pipeline
 
+### v2.0 Simplified Flow (No Fake Data)
+
 ```
-User Input
+User Input (QuickEntry)
   │
-  ├─ initialMass: 47.0
-  ├─ finalMass: 46.5
+  ├─ Selected substance
+  ├─ Selected person
+  ├─ Dab size button clicked (e.g., 0.04g)
   │
   ▼
-calculateDelta(47.0, 46.5)
+addEntry(substanceId, person, 0.04, notes)
   │
-  ├─ Validate inputs (typeof === 'number')
-  ├─ Subtract: 47.0 - 46.5 = 0.5
-  ├─ Round to 2 decimals: 0.50
+  ├─ Validate inputs
+  ├─ Create entry with ONLY real data:
+  │   {
+  │     id: uuid,
+  │     substanceId: uuid,
+  │     person: "t",
+  │     delta: 0.04,      // ← ONLY real measurement
+  │     timestamp: ISO,
+  │     notes: optional
+  │   }
   │
-  └─ Return: 0.5
+  └─ Save to localStorage
       │
       ▼
-    Stored in entry object
-      │
-      ▼
-calculateRemaining(theoreticalMass, [deltas...])
+calculateRemaining(advertisedMass, [deltas...])
   │
-  ├─ theoretical = 50.0 (Apollo)
-  ├─ deltas = [0.5, 0.3, 0.2, ...]
+  ├─ advertisedMass = 1.0 (from substance)
+  ├─ deltas = [0.04, 0.05, 0.03, ...]
   │
-  ├─ Sum deltas: 0.5 + 0.3 + 0.2 + ... = totalUsed
-  ├─ Subtract: 50.0 - totalUsed = remaining
+  ├─ Sum deltas: 0.04 + 0.05 + 0.03 + ... = totalUsed
+  ├─ Subtract: 1.0 - totalUsed = remaining
   ├─ Round to 2 decimals
   │
   └─ Return: remaining mass
@@ -373,16 +389,30 @@ calculateRemaining(theoreticalMass, [deltas...])
       ▼
     Displayed in:
     ├─ SubstanceManager cards
-    ├─ History view
+    ├─ History view (delta column only)
     ├─ Dashboard charts
     └─ Settings statistics
+
+When Flavor Finished:
+  │
+  ├─ User weighs jar + remaining product
+  ├─ Enters grossFinalMass (e.g., 48.5g)
+  │
+  ▼
+Actual Usage Calculation:
+  │
+  ├─ actualUsed = grossInitialMass - grossFinalMass
+  ├─ actualUsed = 50.0 - 48.5 = 1.5g
+  │
+  └─ avgDabMass = actualUsed / sessionCount
+      avgDabMass = 1.5 / 30 = 0.05g per session
 ```
 
 ---
 
 ## Component Lifecycle
 
-### QuickEntry Component
+### QuickEntry Component (v2.0)
 
 ```
 Mount
@@ -396,25 +426,29 @@ Mount
   ├─ Form state initialized
   │  ├─ selectedSubstance: ""
   │  ├─ selectedPerson: ""
-  │  ├─ initialMass: ""
-  │  ├─ finalMass: ""
+  │  ├─ notes: ""
   │  └─ delta: null
   │
   └─ Render initial UI
-      └─ Focus on initialMass input
+      └─ Display button grids
 
-User Interaction
+User Interaction (Simplified)
   │
-  ├─ Types initial mass: "47"
-  │  └─ Calculate delta → display
+  ├─ Clicks flavor button (e.g., "Dark Rainbow")
+  │  └─ selectedSubstance = substance.id
   │
-  ├─ Types final mass: "46.5"
-  │  └─ Update delta → display
+  ├─ Clicks person button (e.g., "T")
+  │  └─ selectedPerson = "t"
   │
-  ├─ Clicks Save
-  │  ├─ Validate all fields
-  │  ├─ Call addEntry()
-  │  ├─ Reset form
+  ├─ (Optional) Types notes
+  │  └─ notes = "smooth flavor"
+  │
+  ├─ Clicks dab size button (e.g., "0.04g")
+  │  ├─ Show confirmation dialog
+  │  ├─ User confirms
+  │  ├─ Call addEntry(substanceId, person, 0.04, notes)
+  │  │  └─ Directly saves delta - NO fake mass computation
+  │  ├─ Reset notes (keep flavor/person selected)
   │  ├─ Show success message
   │  └─ Auto-clear after 3s
   │

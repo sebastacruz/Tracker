@@ -4,6 +4,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getData, saveData } from '../utils/storage';
+import { getCurrentLocalTime } from '../utils/timezone';
 
 export function useEntries() {
   const [entries, setEntries] = useState([]);
@@ -24,7 +25,7 @@ export function useEntries() {
       substanceId,
       person: person.trim(),
       delta: Number(delta),
-      timestamp: new Date().toISOString(),
+      timestamp: getCurrentLocalTime(),
       ...(notes && { notes: notes.trim() }), // Only include notes if provided
     };
 

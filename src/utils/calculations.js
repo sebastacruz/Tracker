@@ -251,6 +251,16 @@ export function getProjectedDepletion(substance, entries) {
 }
 
 /**
+ * Count unique active days (dates with entries)
+ * @param {array} entries - Array of entries
+ * @returns {number} - Number of unique days with activity
+ */
+export function countActiveDays(entries) {
+  const uniqueDays = new Set(entries.map((e) => new Date(e.timestamp).toDateString()));
+  return uniqueDays.size;
+}
+
+/**
  * Get entries filtered by person
  * @param {array} entries - All entries
  * @param {string} person - Person identifier
@@ -266,7 +276,7 @@ export function getPersonEntries(entries, person) {
  * Get overall usage statistics for a person
  * @param {array} entries - All entries
  * @param {string} person - Person identifier
- * @returns {object} - Overall stats { totalMass, totalSessions, dateRange, massPerDay, sessionsPerDay }
+ * @returns {object} - Overall stats with calendar and active-day averages
  */
 export function getOverallStats(entries, person) {
   const personEntries = getPersonEntries(entries, person);
@@ -276,8 +286,11 @@ export function getOverallStats(entries, person) {
       totalMass: 0,
       totalSessions: 0,
       dateRange: { first: null, last: null, days: 0 },
+      activeDays: 0,
       massPerDay: 0,
       sessionsPerDay: 0,
+      massPerActiveDay: 0,
+      sessionsPerActiveDay: 0,
     };
   }
 
@@ -288,6 +301,8 @@ export function getOverallStats(entries, person) {
   const lastEntry = new Date(personEntries[personEntries.length - 1].timestamp);
   const daysDiff = Math.max(1, (lastEntry - firstEntry) / (1000 * 60 * 60 * 24));
 
+  const activeDays = countActiveDays(personEntries);
+
   return {
     totalMass: Number(totalMass.toFixed(2)),
     totalSessions,
@@ -296,8 +311,11 @@ export function getOverallStats(entries, person) {
       last: lastEntry,
       days: Math.ceil(daysDiff),
     },
+    activeDays,
     massPerDay: Number((totalMass / daysDiff).toFixed(2)),
     sessionsPerDay: Number((totalSessions / daysDiff).toFixed(1)),
+    massPerActiveDay: Number((totalMass / activeDays).toFixed(2)),
+    sessionsPerActiveDay: Number((totalSessions / activeDays).toFixed(1)),
   };
 }
 
@@ -306,7 +324,7 @@ export function getOverallStats(entries, person) {
  * @param {array} entries - All entries
  * @param {string} person - Person identifier
  * @param {array} substances - All substances
- * @returns {array} - Array of substance stats
+ * @returns {array} - Array of substance stats with calendar and active-day metrics
  */
 export function getPerSubstanceStats(entries, person, substances, includeInactive = false) {
   const personEntries = getPersonEntries(entries, person);
@@ -323,6 +341,9 @@ export function getPerSubstanceStats(entries, person, substances, includeInactiv
           sessions: 0,
           massPerDay: 0,
           sessionsPerDay: 0,
+          massPerActiveDay: 0,
+          sessionsPerActiveDay: 0,
+          activeDays: 0,
           actualMassUsed: 0,
           avgDabMass: 0,
         };
@@ -333,7 +354,14 @@ export function getPerSubstanceStats(entries, person, substances, includeInactiv
       const lastEntry = new Date(substanceEntries[substanceEntries.length - 1].timestamp);
       const daysDiff = Math.max(1, (lastEntry - firstEntry) / (1000 * 60 * 60 * 24));
 
-      const actualStats = getActualMassUsed(substance, entries);
+      const activeDays = countActiveDays(substanceEntries);
+
+      // Calculate actual mass used and avg dab mass for THIS PERSON only
+      const hasFinalMass =
+        substance.grossFinalMass !== null && substance.grossFinalMass !== undefined;
+      const referenceMass = substance.grossInitialMass || substance.advertisedMass;
+      const actualMassUsed = hasFinalMass ? referenceMass - substance.grossFinalMass : totalMass;
+      const avgDabMass = substanceEntries.length > 0 ? actualMassUsed / substanceEntries.length : 0;
 
       return {
         substance,
@@ -341,8 +369,11 @@ export function getPerSubstanceStats(entries, person, substances, includeInactiv
         sessions: substanceEntries.length,
         massPerDay: Number((totalMass / daysDiff).toFixed(2)),
         sessionsPerDay: Number((substanceEntries.length / daysDiff).toFixed(1)),
-        actualMassUsed: actualStats.actualMassUsed,
-        avgDabMass: actualStats.avgDabMass,
+        massPerActiveDay: Number((totalMass / activeDays).toFixed(2)),
+        sessionsPerActiveDay: Number((substanceEntries.length / activeDays).toFixed(1)),
+        activeDays,
+        actualMassUsed: Number(actualMassUsed.toFixed(2)),
+        avgDabMass: Number(avgDabMass.toFixed(4)),
       };
     })
     .sort((a, b) => b.totalMass - a.totalMass);
@@ -350,9 +381,10 @@ export function getPerSubstanceStats(entries, person, substances, includeInactiv
 
 /**
  * Get weekly comparison for a person (current week vs previous week)
+ * Uses per-day rates for fair comparison between partial and full weeks
  * @param {array} entries - All entries
  * @param {string} person - Person identifier
- * @returns {object} - Weekly comparison { current, previous, change }
+ * @returns {object} - Weekly comparison with per-day rates
  */
 export function getWeeklyComparison(entries, person) {
   const personEntries = getPersonEntries(entries, person);
@@ -378,23 +410,41 @@ export function getWeeklyComparison(entries, person) {
   const currentMass = currentWeekEntries.reduce((sum, e) => sum + e.delta, 0);
   const previousMass = previousWeekEntries.reduce((sum, e) => sum + e.delta, 0);
 
-  const massChange = previousMass > 0 ? ((currentMass - previousMass) / previousMass) * 100 : 0;
+  // Calculate days elapsed in current week (today is day X of the week)
+  const currentDaysElapsed = Math.max(1, now.getDay() + 1);
+  const previousDaysElapsed = 7;
 
+  // Calculate per-day rates
+  const currentMassPerDay = currentMass / currentDaysElapsed;
+  const previousMassPerDay = previousMass / previousDaysElapsed;
+  const currentSessionsPerDay = currentWeekEntries.length / currentDaysElapsed;
+  const previousSessionsPerDay = previousWeekEntries.length / previousDaysElapsed;
+
+  // Calculate percentage change based on rates, not raw totals
+  const massChange =
+    previousMassPerDay > 0
+      ? ((currentMassPerDay - previousMassPerDay) / previousMassPerDay) * 100
+      : 0;
   const sessionsChange =
-    previousWeekEntries.length > 0
-      ? ((currentWeekEntries.length - previousWeekEntries.length) / previousWeekEntries.length) *
-        100
+    previousSessionsPerDay > 0
+      ? ((currentSessionsPerDay - previousSessionsPerDay) / previousSessionsPerDay) * 100
       : 0;
 
   return {
     current: {
       mass: Number(currentMass.toFixed(2)),
       sessions: currentWeekEntries.length,
+      massPerDay: Number(currentMassPerDay.toFixed(2)),
+      sessionsPerDay: Number(currentSessionsPerDay.toFixed(1)),
+      daysElapsed: currentDaysElapsed,
       dateRange: { start: currentWeekStart, end: now },
     },
     previous: {
       mass: Number(previousMass.toFixed(2)),
       sessions: previousWeekEntries.length,
+      massPerDay: Number(previousMassPerDay.toFixed(2)),
+      sessionsPerDay: Number(previousSessionsPerDay.toFixed(1)),
+      daysElapsed: previousDaysElapsed,
       dateRange: { start: previousWeekStart, end: currentWeekStart },
     },
     change: {
@@ -458,8 +508,8 @@ export function getSubstanceMassDistribution(substance, entries) {
   const remaining = Math.max(0, substance.advertisedMass - totalUsed);
 
   return [
-    { name: 't', value: Number(tMass.toFixed(2)), fill: '#2E6F40' },
-    { name: 'e', value: Number(eMass.toFixed(2)), fill: '#3b82f6' },
-    { name: 'Remaining', value: Number(remaining.toFixed(2)), fill: '#475569' },
+    { name: 't', value: Number(tMass.toFixed(2)), fill: '#10b981' }, // Emerald - more vibrant
+    { name: 'e', value: Number(eMass.toFixed(2)), fill: '#f59e0b' }, // Amber - better contrast
+    { name: 'Remaining', value: Number(remaining.toFixed(2)), fill: '#475569' }, // Slate gray
   ];
 }

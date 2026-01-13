@@ -4,6 +4,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { getData, saveData } from '../utils/storage';
+import { getCurrentLocalTime } from '../utils/timezone';
 
 export function useSubstances() {
   const [substances, setSubstances] = useState([]);
@@ -25,7 +26,7 @@ export function useSubstances() {
       advertisedMass: Number(advertisedMass),
       grossInitialMass: grossInitialMass ? Number(grossInitialMass) : null,
       grossFinalMass: null,
-      createdAt: new Date().toISOString(),
+      createdAt: getCurrentLocalTime(),
       active: true,
     };
 

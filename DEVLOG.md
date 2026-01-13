@@ -8,6 +8,308 @@
 
 ---
 
+## Phase 12: Dashboard Mobile UI/UX Optimization ✅ COMPLETE
+
+### January 13, 2026
+
+#### Problem Analysis
+
+**Root Issue**: Dashboard displaying poorly on iPhone 14 Pro with obscured labels, poor sizing, and excessive vertical scrolling (~8063px page height).
+
+**Critical Issues Identified**:
+1. **Pie Chart Labels Overlapping**: Custom external labels colliding, making data unreadable
+2. **Table Horizontal Overflow**: 7 columns causing horizontal scroll on mobile
+3. **Excessive Page Height**: 20 individual pie charts creating 8063px scroll nightmare
+4. **Poor Color Contrast**: Similar green/blue shades hard to distinguish
+5. **Inadequate Touch Targets**: Table rows too small for mobile interaction
+
+#### Implementation - Two Iterations
+
+**Iteration 1: Critical Fixes** ✅
+- **Pie Charts - Legend Replacement**:
+  - Removed problematic external labels (renderPieLabel function)
+  - Implemented Recharts native Legend component
+  - Positioned legends below charts with proper spacing
+  - Result: Clear, readable labels without overlap
+
+- **2-Column Grid on Mobile**:
+  - Changed from 1-column to 2-column layout (grid-cols-1 → grid-cols-2)
+  - Increased chart height: 200px → 250px
+  - Increased chart radius: 50px → 60px
+  - Result: Better space utilization, clearer charts
+
+- **Table Responsiveness**:
+  - Shows only 3 key columns on mobile (Flavor, Used, Sessions)
+  - Hides 4 columns with `hidden md:table-cell` (Avg/Dab, g/day, Sess/day, Days)
+  - Font size: `text-xs` on mobile, `text-sm` on desktop
+  - Increased row padding: py-3 → py-4 for better touch targets
+  - Result: Table functional on mobile without horizontal scroll
+
+- **"Show All" Button**:
+  - Limits initial display to 4 charts (from 20)
+  - Button reveals all charts when clicked
+  - **Page height reduction: 8063px → 2400px (70% reduction!)**
+  - Result: Manageable scrolling, progressive disclosure
+
+**Iteration 2: Polish & Refinements** ✅
+- **Legend Spacing Enhanced**:
+  - Height: 36px → 48px
+  - Added paddingTop: 8px
+  - Line height: 1.6 for readability
+  - Icon size: Reduced to 8px
+  - Filters out legend items < 1%
+  - Result: Cleaner, more readable legends
+
+- **Color Palette Overhaul** ([calculations.js:509-511](src/utils/calculations.js#L509-L511)):
+  - Person 't': #2E6F40 → **#10b981** (Emerald - vibrant)
+  - Person 'e': #3b82f6 → **#f59e0b** (Amber - high contrast)
+  - Remaining: #475569 (Slate gray - unchanged)
+  - Result: Clear visual distinction between users
+
+- **Responsive Grid Breakpoint**:
+  - Changed from `grid-cols-2` to `grid-cols-1 min-[375px]:grid-cols-2`
+  - Ensures single column on devices < 375px
+  - 2-column grid on iPhone 14 Pro (393px) and larger
+  - Result: Better support for smaller devices
+
+- **"Show All" Button Clarity**:
+  - Changed from "Show All (20)" to "Show All 20 +16"
+  - Clear indication of how many more charts will appear
+  - Enhanced styling with font-medium
+  - Result: User knows what to expect
+
+- **Chart Container Refinements**:
+  - Added pb-2 padding to chart containers
+  - Increased height: 250px → 260px for better proportions
+  - Result: Better spacing, more polished appearance
+
+#### Files Modified
+
+| File | Changes | Lines |
+|------|---------|-------|
+| [Dashboard.jsx](src/components/Dashboard.jsx) | Legend formatter, Show All button, grid layout, responsive table | 35, 104-109, 285-353 |
+| [calculations.js](src/utils/calculations.js) | Color palette update (emerald/amber) | 509-511 |
+
+#### UI/UX Expert Review Scores
+
+**Iteration 1 Assessment**: Good (7.5/10)
+- ✅ Massive scroll reduction (70%)
+- ✅ Smart progressive disclosure
+- ✅ Effective use of screen space
+- ⚠️ Legend truncation issues
+- ⚠️ Color contrast needs improvement
+
+**Final Assessment**: **Excellent (9/10)**
+- ✅ Production-ready for iPhone
+- ✅ All critical issues resolved
+- ✅ Manageable page height
+- ✅ Clear data visualization
+- ✅ Responsive design
+
+#### Testing & Validation
+
+**Platform**: iPhone 14 Pro Safari (393×852px) via Playwright
+**Test Results**: All functionality verified working
+- Pie charts render with clear legends
+- Table shows appropriate columns per breakpoint
+- "Show All" button expands/collapses charts
+- Color palette provides clear distinction
+- Touch targets adequate for mobile interaction
+
+#### Technical Details
+
+**Before → After Metrics**:
+- **Page Height**: 8063px → 2400px (70% reduction)
+- **Pie Charts Visible**: 20 → 4 (initially)
+- **Chart Size**: 200px × 50px radius → 260px × 60px radius
+- **Table Columns**: 7 → 3 (on mobile)
+- **Legend Height**: 36px → 48px
+- **Color Palette**: Similar greens → Emerald/Amber contrast
+
+**Key Implementation Patterns**:
+```jsx
+// Responsive grid with custom breakpoint
+<div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 gap-4">
+
+// Progressive disclosure
+{(showAllCharts ? pieChartsData : pieChartsData.slice(0, 4)).map(...)}
+
+// Responsive table columns
+<th className="... hidden md:table-cell">Avg/Dab</th>
+
+// Enhanced legend configuration
+<Legend
+  verticalAlign="bottom"
+  height={48}
+  iconType="circle"
+  formatter={formatPieLegend}
+  wrapperStyle={{
+    fontSize: '11px',
+    paddingTop: '8px',
+    lineHeight: '1.6'
+  }}
+  iconSize={8}
+/>
+```
+
+#### Impact Summary
+
+**User Experience Transformation**:
+- **Before**: Overwhelming 8000px scroll, obscured labels, horizontal scroll on table
+- **After**: Focused 2400px view, clear visualizations, mobile-optimized layout
+- **Interaction Cost**: Reduced scroll fatigue by 70%
+
+**Visual Design**:
+- **Before**: Monochromatic green shades, overlapping labels
+- **After**: Distinct emerald/amber palette, clean native legends
+- **Readability**: Significantly improved on mobile devices
+
+**Mobile Performance**:
+- **Layout**: Responsive grid adapts to device size
+- **Touch Targets**: All buttons/rows meet 44px minimum
+- **Scrolling**: Smooth, manageable vertical scroll
+- **Charts**: 2×2 grid efficiently uses screen width
+
+#### Production Status
+
+**Deployment Ready**: ✅ YES (9/10 score)
+- All critical issues resolved
+- UI/UX expert approved for production
+- Mobile testing verified on iPhone 14 Pro
+- No breaking changes to existing functionality
+- Backwards compatible with existing data
+
+**Next Steps**:
+- Monitor user feedback on mobile dashboard experience
+- Consider adding detail view for hidden table columns
+- Possible future enhancement: Swipeable chart cards
+
+---
+
+## Phase 11: Fix Averages & Weekly Usage Calculations ✅ COMPLETE
+
+### January 13, 2026
+
+#### ✅ Implementation Complete
+
+**All Issues Fixed**:
+1. ✅ Active-day vs calendar-day averages - now shows BOTH metrics
+2. ✅ Weekly comparison uses per-day rates for fair comparison
+3. ✅ avgDabMass now filtered by person "t" only
+4. ✅ Per-substance stats include active-day metrics
+5. ✅ Timestamp migration: UTC → device local time
+
+**Files Modified**:
+- `src/utils/calculations.js` - Added `countActiveDays()`, updated all stat functions
+- `src/utils/timezone.js` - NEW - Device local time utilities
+- `src/utils/storage.js` - Added UTC→local timestamp migration
+- `src/hooks/useEntries.js` - Use local time for new entries
+- `src/hooks/useSubstances.js` - Use local time for new substances
+- `src/components/Dashboard.jsx` - Updated UI to show both metrics
+
+**Verification**: Tested in Playwright with iPhone Safari simulation - all metrics displaying correctly.
+
+---
+
+#### Problem Analysis (Original)
+
+**Root Issue**: The Dashboard's averages and weekly usage numbers are mathematically misleading due to how calculations handle time periods.
+
+#### Issues Identified
+
+**Issue 1: "Mass per day" / "Sessions per day" - Calendar Span vs Active Days**
+- **Location**: [calculations.js:289](src/utils/calculations.js#L289)
+- **Current Logic**:
+  ```javascript
+  const daysDiff = Math.max(1, (lastEntry - firstEntry) / (1000 * 60 * 60 * 24));
+  massPerDay: Number((totalMass / daysDiff).toFixed(2))
+  ```
+- **Problem**: Divides by total *span* between first/last entry, not by *active* days
+- **Example**: 10 entries totaling 5g over 30 days shows `0.17g/day`, but if those entries happened on only 5 different days, per-active-day usage is `1.0g/day`
+- **Impact**: Under-reports actual usage intensity on use-days
+
+**Issue 2: Weekly Comparison - Unfair Partial Week Comparison**
+- **Location**: [calculations.js:357-405](src/utils/calculations.js#L357-L405)
+- **Current Logic**: Compares raw totals between current week (partial) and previous week (full 7 days)
+- **Problem**: If today is Tuesday, "this week" has 2-3 days but "last week" has 7 days
+- **Example**:
+  - This week (3 days): 3g → shows "3g"
+  - Last week (7 days): 5g → shows "5g"
+  - Display: "down 40%" ❌
+  - Reality: This week = 1g/day, Last week = 0.71g/day → usage is UP
+- **Impact**: Misleading trend indicators, especially early in the week
+
+**Issue 3: avgDabMass Includes ALL Users**
+- **Location**: [calculations.js:336](src/utils/calculations.js#L336)
+- **Current Logic**:
+  ```javascript
+  const actualStats = getActualMassUsed(substance, entries);  // Not filtered by person!
+  ```
+- **Problem**: Dashboard says "Your Usage by Flavor" but `avgDabMass` is calculated from BOTH users' entries
+- **Impact**: Personal stats table shows combined average, not individual's average
+
+**Issue 4: Per-Substance Stats Same Active-Day Issue**
+- **Location**: [calculations.js:334](src/utils/calculations.js#L334)
+- **Problem**: Same span-based calculation used for per-substance `massPerDay` and `sessionsPerDay`
+- **Impact**: Same under-reporting issue as Issue 1, per flavor
+
+#### User Preference (from clarification)
+
+1. **For averages**: Show BOTH metrics - calendar average AND active-day average
+2. **For weekly comparison**: Compare per-day RATES instead of raw totals
+
+#### Proposed Solution
+
+**Step 1**: Add helper function for counting active days
+```javascript
+function countActiveDays(entries) {
+  const uniqueDays = new Set(
+    entries.map(e => new Date(e.timestamp).toDateString())
+  );
+  return uniqueDays.size;
+}
+```
+
+**Step 2**: Update `getOverallStats` to return both averages
+- `massPerDay` (calendar span - existing)
+- `massPerActiveDay` (active days - NEW)
+- `sessionsPerDay` (calendar span - existing)
+- `sessionsPerActiveDay` (active days - NEW)
+- `activeDays` count (NEW)
+
+**Step 3**: Update `getWeeklyComparison` to use rates
+- Calculate days elapsed in current week
+- Return per-day rates: `current.massPerDay`, `previous.massPerDay`
+- Base percentage change on rates, not raw totals
+
+**Step 4**: Fix `getPerSubstanceStats` avgDabMass
+- Calculate from person-filtered entries only (use existing `substanceEntries`)
+
+**Step 5**: Apply active-day logic to per-substance stats
+
+**Step 6**: Update Dashboard.jsx to display new metrics
+- Overall Summary: Show both averages with clear labels
+- Weekly Comparison: Show rates (e.g., "0.5g/day vs 0.4g/day")
+
+#### Files to Modify
+
+| File | Changes |
+|------|---------|
+| src/utils/calculations.js | Add `countActiveDays()`, update `getOverallStats()`, `getWeeklyComparison()`, `getPerSubstanceStats()` |
+| src/components/Dashboard.jsx | Update Overall Summary card, Weekly Comparison card, per-substance table |
+
+#### Verification Checklist
+
+- [ ] `countActiveDays()` correctly counts unique dates
+- [ ] Both calendar and active-day averages display in Dashboard
+- [ ] Weekly comparison shows per-day rates
+- [ ] avgDabMass filtered by person in stats table
+- [ ] Lint passes (`npm run lint`)
+- [ ] Build succeeds (`npm run build`)
+- [ ] Manual test on mobile viewport
+
+---
+
 ## Phase 10: Data Flow Refactoring ✅ COMPLETED
 
 ### January 11-12, 2026

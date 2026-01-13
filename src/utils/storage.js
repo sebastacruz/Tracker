@@ -18,6 +18,52 @@ const defaultData = {
 };
 
 /**
+ * Convert UTC timestamp to local time format
+ * @param {string} timestamp - UTC timestamp (e.g., "2026-01-13T10:30:00.000Z")
+ * @returns {string} - Local time timestamp (e.g., "2026-01-13T02:30:00")
+ */
+function convertUTCToLocal(timestamp) {
+  // If timestamp doesn't end with Z, it's already in local format
+  if (!timestamp.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(timestamp)) {
+    return timestamp;
+  }
+
+  const date = new Date(timestamp);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
+/**
+ * Migrate timestamps from UTC to local time format
+ * @param {object} data - Data with UTC timestamps
+ * @returns {object} - Data with local timestamps
+ */
+function migrateTimestamps(data) {
+  const migratedSubstances = data.substances.map((substance) => ({
+    ...substance,
+    createdAt: convertUTCToLocal(substance.createdAt),
+  }));
+
+  const migratedEntries = data.entries.map((entry) => ({
+    ...entry,
+    timestamp: convertUTCToLocal(entry.timestamp),
+  }));
+
+  return {
+    ...data,
+    substances: migratedSubstances,
+    entries: migratedEntries,
+  };
+}
+
+/**
  * Migrate data from v1.0 to v2.0 schema
  * Changes:
  * - Substances: theoreticalInitialMass → advertisedMass
@@ -109,7 +155,22 @@ export function getData() {
 
     if (needsMigration) {
       data = migrateToV2(data);
-      // Save migrated data immediately
+    }
+
+    // Migrate UTC timestamps to local time
+    const needsTimestampMigration =
+      data.entries &&
+      data.entries.length > 0 &&
+      (data.entries[0].timestamp.endsWith('Z') ||
+        /[+-]\d{2}:\d{2}$/.test(data.entries[0].timestamp));
+
+    if (needsTimestampMigration) {
+      console.log('Converting UTC timestamps to local time...');
+      data = migrateTimestamps(data);
+    }
+
+    // Save migrated data if any migration occurred
+    if (needsMigration || needsTimestampMigration) {
       saveData(data);
     }
 

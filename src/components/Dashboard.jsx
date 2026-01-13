@@ -32,6 +32,7 @@ export default function Dashboard({ substances, entries }) {
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
+  const [showAllCharts, setShowAllCharts] = useState(false);
 
   // Refresh handler
   const handleRefresh = () => {
@@ -100,27 +101,11 @@ export default function Dashboard({ substances, entries }) {
     return Object.values(timeMap).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   }, [selectedSubstances, entries, substances]);
 
-  const renderPieLabel = ({ cx, cy, midAngle, outerRadius, name, percent }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = outerRadius + 25;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (percent < 0.05) return null;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="#e2e8f0"
-        fontSize={13}
-        fontWeight="500"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-      >
-        {`${name}: ${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
+  // Custom Legend formatter for pie charts with proper wrapping
+  const formatPieLegend = (value, entry) => {
+    const percent = entry.payload.percent;
+    if (percent < 0.01) return null; // Hide items < 1%
+    return `${value}: ${(percent * 100).toFixed(0)}%`;
   };
 
   if (substances.length === 0) {
@@ -173,14 +158,24 @@ export default function Dashboard({ substances, entries }) {
           <h3 className="text-lg font-bold mb-4">Overall Summary</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Mass per day</span>
+              <span className="text-slate-400">Mass per active day</span>
               <span className="text-2xl font-mono font-bold text-emerald-400">
-                {overallStats.massPerDay}g
+                {overallStats.massPerActiveDay}g
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Sessions per day</span>
+              <span className="text-slate-400 text-sm">Mass per calendar day</span>
+              <span className="text-lg font-mono text-slate-300">{overallStats.massPerDay}g</span>
+            </div>
+            <div className="flex justify-between items-center border-t border-slate-700 pt-3">
+              <span className="text-slate-400">Sessions per active day</span>
               <span className="text-xl font-mono font-bold text-emerald-400">
+                {overallStats.sessionsPerActiveDay}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Sessions per calendar day</span>
+              <span className="text-lg font-mono text-slate-300">
                 {overallStats.sessionsPerDay}
               </span>
             </div>
@@ -193,8 +188,12 @@ export default function Dashboard({ substances, entries }) {
               <span className="font-mono text-slate-300">{overallStats.totalSessions}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Tracking days</span>
-              <span className="font-mono text-slate-300">{overallStats.dateRange.days}</span>
+              <span className="text-slate-400">Active days</span>
+              <span className="font-mono text-slate-300">{overallStats.activeDays}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Calendar span</span>
+              <span className="font-mono text-slate-300">{overallStats.dateRange.days} days</span>
             </div>
           </div>
         </div>
@@ -205,14 +204,14 @@ export default function Dashboard({ substances, entries }) {
           <div className="space-y-3">
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-slate-400">Mass</span>
+                <span className="text-slate-400">Mass per day</span>
               </div>
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-baseline gap-2">
                 <span className="text-xl font-mono font-bold text-emerald-400">
-                  {weeklyComparison.current.mass}g
+                  {weeklyComparison.current.massPerDay}g/day
                 </span>
                 <span className="text-sm text-slate-400">
-                  (was {weeklyComparison.previous.mass}g)
+                  vs {weeklyComparison.previous.massPerDay}g/day
                 </span>
                 {weeklyComparison.change.mass !== 0 && (
                   <span
@@ -225,17 +224,21 @@ export default function Dashboard({ substances, entries }) {
                   </span>
                 )}
               </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-slate-400">Sessions</span>
+              <div className="text-xs text-slate-500 mt-1">
+                This week: {weeklyComparison.current.mass}g ({weeklyComparison.current.daysElapsed}{' '}
+                days) | Last week: {weeklyComparison.previous.mass}g (7 days)
               </div>
-              <div className="flex items-baseline gap-3">
+            </div>
+            <div className="border-t border-slate-700 pt-3">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-slate-400">Sessions per day</span>
+              </div>
+              <div className="flex items-baseline gap-2">
                 <span className="text-xl font-mono font-bold text-emerald-400">
-                  {weeklyComparison.current.sessions}
+                  {weeklyComparison.current.sessionsPerDay}/day
                 </span>
                 <span className="text-sm text-slate-400">
-                  (was {weeklyComparison.previous.sessions})
+                  vs {weeklyComparison.previous.sessionsPerDay}/day
                 </span>
                 {weeklyComparison.change.sessions !== 0 && (
                   <span
@@ -248,6 +251,10 @@ export default function Dashboard({ substances, entries }) {
                   </span>
                 )}
               </div>
+              <div className="text-xs text-slate-500 mt-1">
+                This week: {weeklyComparison.current.sessions} sessions | Last week:{' '}
+                {weeklyComparison.previous.sessions} sessions
+              </div>
             </div>
           </div>
         </div>
@@ -258,27 +265,36 @@ export default function Dashboard({ substances, entries }) {
         <div className="card mb-6">
           <h3 className="text-lg font-bold mb-4">Your Usage by Flavor</h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs md:text-sm">
               <thead>
                 <tr className="border-b border-slate-700">
                   <th className="text-left py-2 px-2 text-slate-400 font-medium">Flavor</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Used (g)</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Sessions</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Avg/Dab</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">g/day</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Sess/day</th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium hidden md:table-cell">
+                    Avg/Dab
+                  </th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium hidden lg:table-cell">
+                    g/day
+                  </th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium hidden lg:table-cell">
+                    Sess/day
+                  </th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium text-xs hidden lg:table-cell">
+                    Days
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {substanceStats.map((stat) => (
                   <tr key={stat.substance.id} className="border-b border-slate-800">
-                    <td className="py-3 px-2 font-medium text-slate-200">
+                    <td className="py-4 px-2 font-medium text-slate-200">
                       {stat.substance.name}
                       {!stat.substance.active && (
                         <span className="ml-2 text-xs text-slate-500">(Inactive)</span>
                       )}
                     </td>
-                    <td className="py-3 px-2 text-right font-mono text-emerald-400">
+                    <td className="py-4 px-2 text-right font-mono text-emerald-400">
                       {stat.actualMassUsed > 0 && stat.actualMassUsed !== stat.totalMass ? (
                         <span title={`From entries: ${stat.totalMass}g`}>
                           {stat.actualMassUsed}*
@@ -287,17 +303,20 @@ export default function Dashboard({ substances, entries }) {
                         stat.totalMass
                       )}
                     </td>
-                    <td className="py-3 px-2 text-right font-mono text-slate-300">
+                    <td className="py-4 px-2 text-right font-mono text-slate-300">
                       {stat.sessions}
                     </td>
-                    <td className="py-3 px-2 text-right font-mono text-purple-400">
+                    <td className="py-4 px-2 text-right font-mono text-purple-400 hidden md:table-cell">
                       {stat.avgDabMass > 0 ? stat.avgDabMass : '-'}
                     </td>
-                    <td className="py-3 px-2 text-right font-mono text-slate-300">
-                      {stat.massPerDay}
+                    <td className="py-4 px-2 text-right font-mono text-slate-300 hidden lg:table-cell">
+                      {stat.massPerActiveDay}
                     </td>
-                    <td className="py-3 px-2 text-right font-mono text-slate-300">
-                      {stat.sessionsPerDay}
+                    <td className="py-4 px-2 text-right font-mono text-slate-300 hidden lg:table-cell">
+                      {stat.sessionsPerActiveDay}
+                    </td>
+                    <td className="py-4 px-2 text-right font-mono text-slate-500 text-xs hidden lg:table-cell">
+                      {stat.activeDays}
                     </td>
                   </tr>
                 ))}
@@ -312,39 +331,68 @@ export default function Dashboard({ substances, entries }) {
 
       {/* Mass Distribution Pie Charts */}
       <div className="card mb-6">
-        <h3 className="text-lg font-bold mb-4">Mass Distribution by Flavor</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {pieChartsData.map(({ substance, distribution }) => (
-            <div key={substance.id} className="flex flex-col items-center">
-              <p className="text-sm font-medium text-slate-300 mb-2">{substance.name}</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={distribution}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={50}
-                    label={renderPieLabel}
-                    labelLine={false}
-                  >
-                    {distribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1A1A1A',
-                      border: '1px solid #303030',
-                      borderRadius: '8px',
-                    }}
-                    formatter={(value) => `${value}g`}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          ))}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold">Mass Distribution by Flavor</h3>
+          {pieChartsData.length > 4 && (
+            <button
+              onClick={() => setShowAllCharts(!showAllCharts)}
+              className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors px-3 py-2 rounded-lg hover:bg-emerald-400/10 font-medium"
+            >
+              {showAllCharts ? (
+                'Show Less'
+              ) : (
+                <>
+                  Show All {pieChartsData.length}{' '}
+                  <span className="text-slate-500 text-xs">+{pieChartsData.length - 4}</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 gap-4">
+          {(showAllCharts ? pieChartsData : pieChartsData.slice(0, 4)).map(
+            ({ substance, distribution }) => (
+              <div key={substance.id} className="flex flex-col items-center pb-2">
+                <p className="text-sm font-medium text-slate-300 mb-2">{substance.name}</p>
+                <ResponsiveContainer width="100%" height={260}>
+                  <PieChart>
+                    <Pie
+                      data={distribution}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={60}
+                    >
+                      {distribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Legend
+                      verticalAlign="bottom"
+                      height={48}
+                      iconType="circle"
+                      formatter={formatPieLegend}
+                      wrapperStyle={{
+                        fontSize: '11px',
+                        paddingTop: '8px',
+                        lineHeight: '1.6',
+                      }}
+                      iconSize={8}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1A1A1A',
+                        border: '1px solid #303030',
+                        borderRadius: '8px',
+                      }}
+                      formatter={(value) => `${value}g`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )
+          )}
         </div>
       </div>
 

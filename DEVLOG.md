@@ -8,6 +8,21 @@
 
 ---
 
+## Phase 13: Auto-refresh & State Management ✅ COMPLETE
+
+### January 13, 2026
+
+**Problem**: Adding entries required manual refresh to see updates in Dashboard/History.
+
+**Solution**: Lifted state management to App.jsx, passing `addEntry`/`deleteEntry` as props. All views now share a single source of truth and auto-update.
+
+**Changes**:
+- Removed refresh button from History (kept one in Dashboard)
+- Added Playwright E2E tests for auto-refresh behavior
+- Updated CLAUDE.md with Playwright testing requirements
+
+---
+
 ## Phase 12: Dashboard Mobile UI/UX Optimization ✅ COMPLETE
 
 ### January 13, 2026

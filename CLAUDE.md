@@ -13,6 +13,12 @@ npm run build            # Production build → docs/
 npm run preview          # Preview production build
 npm run lint             # Run ESLint
 
+# Playwright E2E Testing (REQUIRED before major changes)
+npx playwright test                    # Run all E2E tests (iPhone 14 Pro/Safari)
+npx playwright test --ui               # Run with interactive UI
+npx playwright test tests/e2e/auto-refresh.spec.js  # Run specific test
+npx playwright show-report             # View HTML test report
+
 # Git workflow
 git status               # Check changes
 git add .                # Stage all
@@ -343,9 +349,76 @@ const toggleFavorite = (id) => {
 
 ## 5. Testing Strategy
 
+### Playwright E2E Testing (REQUIRED)
+
+**CRITICAL**: All UI changes MUST be tested with Playwright before committing.
+The test suite is configured to simulate **Safari on iPhone 14 Pro** (WebKit engine).
+
+**Configuration**: `playwright.config.js`
+- Device: iPhone 14 Pro
+- Engine: WebKit (Safari)
+- Base URL: http://localhost:5173/Tracker/
+
+**Test Files**: `tests/e2e/*.spec.js`
+- `app.spec.js` - App loading and navigation
+- `auto-refresh.spec.js` - Entry addition auto-updates views
+- `visual.spec.js` - Visual regression tests
+- `ui-simplification.spec.js` - UI interaction tests
+
+**Running Tests**:
+```bash
+# Start dev server first (in separate terminal)
+npm run dev
+
+# Run all tests
+npx playwright test
+
+# Run with interactive UI (recommended for debugging)
+npx playwright test --ui
+
+# Run specific test file
+npx playwright test tests/e2e/auto-refresh.spec.js
+
+# View test report after run
+npx playwright show-report
+```
+
+**Writing New Tests**:
+```javascript
+import { test, expect } from '@playwright/test'
+
+test.describe('Feature Name', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+  })
+
+  test('should do something', async ({ page }) => {
+    // Inject test data if needed
+    await page.evaluate(() => {
+      localStorage.setItem('tracker_data', JSON.stringify({...}))
+    })
+    await page.reload()
+
+    // Interact with UI
+    await page.locator('button').filter({ hasText: 'Click Me' }).click()
+
+    // Assert results
+    await expect(page.locator('text=Success')).toBeVisible()
+  })
+})
+```
+
+**Key Testing Patterns**:
+1. Always use `page.waitForLoadState('networkidle')` after navigation
+2. Use `page.evaluate()` to inject/read localStorage data
+3. Use `page.locator()` with filter for reliable element selection
+4. Add `page.waitForTimeout(500)` after swipe/scroll animations
+
 ### Manual Testing Checklist
 
 **Before Every Commit**:
+- [ ] Playwright E2E tests pass (`npx playwright test`)
 - [ ] Feature works as expected
 - [ ] No console errors or warnings
 - [ ] Data persists after refresh
@@ -353,6 +426,7 @@ const toggleFavorite = (id) => {
 - [ ] Responsive on mobile (DevTools)
 
 **Major Changes**:
+- [ ] All E2E tests pass
 - [ ] All views render correctly
 - [ ] Navigation works
 - [ ] Charts display with data
@@ -361,7 +435,7 @@ const toggleFavorite = (id) => {
 
 ### Browser Testing
 
-**Primary Target**: Safari on iPhone (iOS 15+)
+**Primary Target**: Safari on iPhone (iOS 15+) - Tested via Playwright
 
 **Also Test**:
 - Chrome desktop

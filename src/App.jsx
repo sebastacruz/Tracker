@@ -15,7 +15,7 @@ import { useEntries } from './hooks/useEntries';
 
 export default function App() {
   const { substances } = useSubstances();
-  const { entries } = useEntries();
+  const { entries, addEntry, deleteEntry, updateEntry } = useEntries();
   const [currentView, setCurrentView] = useState(() => {
     return localStorage.getItem('tracker_currentView') || 'entry';
   });
@@ -34,7 +34,7 @@ export default function App() {
           data-page="entry"
           className="swipe-page flex-shrink-0 w-full min-h-[calc(100vh-4rem)] snap-center"
         >
-          <QuickEntry substances={substances} entries={entries} />
+          <QuickEntry substances={substances} entries={entries} addEntry={addEntry} />
         </div>
 
         {/* Page 2: Dashboard */}
@@ -50,7 +50,12 @@ export default function App() {
           data-page="history"
           className="swipe-page flex-shrink-0 w-full min-h-[calc(100vh-4rem)] snap-center"
         >
-          <History substances={substances} entries={entries} />
+          <History
+            substances={substances}
+            entries={entries}
+            deleteEntry={deleteEntry}
+            updateEntry={updateEntry}
+          />
         </div>
 
         {/* Page 4: Substance Manager (Flavors) */}

@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Auto-refresh State Management (2026-01-13)**: Views now auto-update when entries are added
+  - Lifted `addEntry`/`deleteEntry` to App.jsx for single source of truth
+  - Removed refresh button from History (Dashboard retains one for manual refresh)
+  - Added Playwright E2E tests for auto-refresh behavior (Safari/iPhone 14 Pro)
+  - Updated CLAUDE.md with Playwright testing requirements
 - **Data Model Refactoring (2026-01-12)**: Complete schema overhaul to eliminate fake computed values
   - Renamed `theoreticalInitialMass` → `advertisedMass` (clearer naming for product label mass)
   - Renamed `totalInitialMass` → `grossInitialMass` (jar + product on scale at start)

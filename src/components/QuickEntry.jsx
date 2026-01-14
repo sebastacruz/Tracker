@@ -2,8 +2,7 @@
  * QuickEntry component - Main data entry screen
  * Optimized for quick, one-tap entry of substance usage data
  */
-import { useState } from 'react';
-import { useEntries } from '../hooks/useEntries';
+import { useState, useMemo } from 'react';
 import ConfirmDialog from './ConfirmDialog';
 
 /**
@@ -18,9 +17,11 @@ function sanitizeInput(input) {
   return div.innerHTML;
 }
 
-export default function QuickEntry({ substances, entries: entriesProp }) {
-  const { addEntry, getUniquePeople } = useEntries();
-  const entries = entriesProp;
+export default function QuickEntry({ substances, entries, addEntry }) {
+  // Derive unique people from entries
+  const uniquePeople = useMemo(() => {
+    return [...new Set(entries.map((e) => e.person))].sort();
+  }, [entries]);
   const [selectedSubstance, setSelectedSubstance] = useState('');
   const [selectedPerson, setSelectedPerson] = useState('');
   const [notes, setNotes] = useState('');
@@ -116,7 +117,7 @@ export default function QuickEntry({ substances, entries: entriesProp }) {
         <div className="space-y-3">
           <label className="label-base">Select Person</label>
           <div className="grid grid-cols-2 gap-3">
-            {getUniquePeople().map((person) => (
+            {uniquePeople.map((person) => (
               <button
                 key={person}
                 type="button"
